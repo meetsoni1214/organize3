@@ -8,6 +8,10 @@ class OfflineFolderWithNotesRepository(private val folderWithNotesDao: FolderWit
         folderWithNotesDao.insertNote(note)
     }
 
+    override suspend fun insertNotes(notesList: List<Note>) {
+        folderWithNotesDao.insertNotes(notesList)
+    }
+
     override suspend fun deleteNote(note: Note) {
         folderWithNotesDao.deleteNote(note)
     }
@@ -16,16 +20,24 @@ class OfflineFolderWithNotesRepository(private val folderWithNotesDao: FolderWit
         folderWithNotesDao.updateNote(note)
     }
 
-    override suspend fun insertFolder(folder: Folder) {
-        folderWithNotesDao.insertFolder(folder)
+    override suspend fun insertFolder(folder: Folder): Long {
+        return folderWithNotesDao.insertFolder(folder)
     }
 
     override suspend fun deleteFolder(folder: Folder) {
         folderWithNotesDao.deleteFolder(folder)
     }
 
+    override suspend fun deleteFolderWithId(id: Int) {
+        folderWithNotesDao.deleteFolderWithId(id)
+    }
+
     override suspend fun updateFolder(folder: Folder) {
         folderWithNotesDao.updateFolder(folder)
+    }
+
+    override suspend fun deleteNotes(id: Int) {
+        folderWithNotesDao.deleteNotes(id)
     }
 
     override fun getFolderWithNotes(folderId: Int): Flow<FolderWithNotes> {

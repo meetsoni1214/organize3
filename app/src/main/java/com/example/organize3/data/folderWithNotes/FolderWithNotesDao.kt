@@ -10,7 +10,10 @@ interface FolderWithNotesDao {
     suspend fun insertNote(note: Note)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertFolder(folder: Folder)
+    suspend fun insertFolder(folder: Folder): Long
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertNotes(notesList: List<Note>)
 
     @Delete
     suspend fun deleteNote(note: Note)
@@ -23,6 +26,12 @@ interface FolderWithNotesDao {
 
     @Update
     suspend fun updateNote(note: Note)
+
+    @Query("DELETE FROM notes WHERE folderId = :id")
+    suspend fun deleteNotes(id: Int)
+
+    @Query("DELETE FROM Folder WHERE id = :id")
+    suspend fun deleteFolderWithId(id: Int)
 
     @Transaction
     @Query("SELECT * FROM Folder WHERE id = :folderId")

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -38,7 +39,9 @@ fun AddNoteScreen(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val uiState = viewModel.noteUiState
-    Scaffold(
+    val scaffoldState = rememberScaffoldState()
+    androidx.compose.material.Scaffold(
+        scaffoldState = scaffoldState,
         topBar = {
             OrganizeTopAppBar(
                 title = "",
@@ -54,7 +57,25 @@ fun AddNoteScreen(
                     navigateBack()
                 },
                 canNavigateBack = true,
-                navigateUp = onNavigateUp
+                navigateUp = navigateBack,
+                shareText = stringResource(
+                    R.string.share_note,
+                    uiState.title,
+                    uiState.content
+                ),
+                shareSubject = stringResource(id = R.string.notes),
+                deleteEmail = {
+                    coroutineScope.launch {
+                        viewModel.deleteNote()
+                        navigateBack()
+                    }
+                },
+                duplicateEmail = {
+                    coroutineScope.launch {
+                        viewModel.duplicateNote()
+                        navigateBack()
+                    }
+                }
             )
         }
     ) { innerPadding ->
@@ -75,7 +96,8 @@ fun NoteEntryBody(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(20.dp)
+            .padding(horizontal = 20.dp)
+            .padding(bottom = 16.dp)
             .verticalScroll(rememberScrollState())
     ) {
         TransparentTextField(
@@ -86,7 +108,7 @@ fun NoteEntryBody(
             isHintVisible = noteUiState.title.isBlank(),
             textStyle = MaterialTheme.typography.headlineMedium,
             onFocusChange = {})
-        Spacer(modifier = modifier.height(4.dp))
+        Spacer(modifier = modifier.height(12.dp))
         TransparentTextFieldContent(
             noteUiState = noteUiState,
             hint = stringResource(id = R.string.start_writing),

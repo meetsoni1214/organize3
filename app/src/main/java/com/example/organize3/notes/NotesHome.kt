@@ -52,11 +52,13 @@ import androidx.compose.material.Card as Card1
 fun NotesHome(
     modifier: Modifier = Modifier,
     onNavigateUp:() -> Unit,
+    navigateBack:() -> Unit,
     navigateToNote:(Int, Int) -> Unit,
     onAddNote:(Int, Int) -> Unit,
     viewModel: NotesHomeViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val notesHomeUiState by viewModel.noteHomeUiState.collectAsState()
+//    val folderUiState by viewModel.folder.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     val scaffoldState = rememberScaffoldState()
     Scaffold (
@@ -69,6 +71,19 @@ fun NotesHome(
         topBar = {
             OrganizeTopAppBar(
                 title = viewModel.folderName,
+                showFolderMenu = true,
+                deleteEmail = {
+                              coroutineScope.launch {
+                                  viewModel.deleteFolder()
+                              }
+                    navigateBack()
+                },
+                duplicateEmail = {
+                    coroutineScope.launch {
+                        viewModel.duplicateFolder()
+                    }
+                    navigateBack()
+                },
                 canNavigateBack = true,
                 navigateUp = onNavigateUp
             )

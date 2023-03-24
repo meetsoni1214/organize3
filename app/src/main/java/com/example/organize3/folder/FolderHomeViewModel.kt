@@ -31,6 +31,10 @@ class FolderHomeViewModel(
     suspend fun insertFolder(fName: String) {
         folderRepository.insertFolder(Folder(folderName = fName))
     }
+    suspend fun deleteFolder(folder: Folder, id: Int) {
+        folderRepository.deleteFolder(folder)
+        folderRepository.deleteNotes(id)
+    }
 }
 /**
  * Ui State for FolderHomeScreen

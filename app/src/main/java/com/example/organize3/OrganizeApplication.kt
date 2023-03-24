@@ -38,6 +38,7 @@ fun OrganizeTopAppBar(
     modifier: Modifier = Modifier,
     showMenu: Boolean = false,
     showDone: Boolean = false,
+    showFolderMenu: Boolean = false,
     shareSubject: String = "",
     shareText: String = "",
     isBankAccount: Boolean = false,
@@ -85,7 +86,7 @@ fun OrganizeTopAppBar(
                                     showDialog.value = true
                                 showExpandedMenu = !showExpandedMenu
                             },
-                            text = { Text(text = stringResource(id = R.string.share))}) 
+                            text = { Text(text = stringResource(id = R.string.share))})
                         DropdownMenuItem(
                             text = { Text(text = stringResource(id = R.string.delete))},
                             onClick = {
@@ -168,13 +169,99 @@ fun OrganizeTopAppBar(
                           }) {
                               Icon(imageVector = Icons.Default.Done, contentDescription = "Save Note")
                           }
+
+                    IconButton(onClick = { showExpandedMenu = !showExpandedMenu }) {
+                        Icon(imageVector = Icons.Default.MoreVert, contentDescription = "menu_button")
+                    }
+                    DropdownMenu(
+                        expanded = showExpandedMenu,
+                        onDismissRequest = { showExpandedMenu = false}
+                    ) {
+                        DropdownMenuItem(
+                            onClick = {
+                                showDialog.value = true
+                                showExpandedMenu = !showExpandedMenu
+                            },
+                            text = { Text(text = stringResource(id = R.string.share))})
+                        DropdownMenuItem(
+                            onClick = {
+                                duplicateEmail()
+                                showExpandedMenu = !showExpandedMenu
+                            },
+                            text = {Text(text = stringResource(id = R.string.duplicate))}
+                        )
+                        DropdownMenuItem(
+                            text = { Text(text = stringResource(id = R.string.delete))},
+                            onClick = {
+                                deleteConfirmationRequired = true
+                                showExpandedMenu = !showExpandedMenu
+                            })
+                    }
+
+
                 },
                 navigationIcon = {
                     IconButton(onClick = navigateUp) {
                         Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = stringResource(id = R.string.back_button))
                     }
                 })
-        } else {
+            if (deleteConfirmationRequired) {
+                DeleteConfirmationDialog(
+                    onDeleteConfirm = deleteEmail,
+                    onDeleteCancel = { deleteConfirmationRequired = false })
+            }
+            if (showDialog.value) {
+                val intent: Intent = Intent().apply {
+                    action = Intent.ACTION_SEND
+                    putExtra(Intent.EXTRA_SUBJECT, shareSubject)
+                    putExtra(Intent.EXTRA_TEXT, shareText)
+                    type = "text/plain"
+                }
+                val shareIntent = Intent.createChooser(intent, null)
+                context.startActivity(shareIntent)
+                showDialog.value = false
+            }
+        }
+        else if (showFolderMenu) {
+            TopAppBar(
+                title = { Text(text = title)},
+                modifier = modifier,
+                actions = {
+                    IconButton(onClick = { showExpandedMenu = !showExpandedMenu }) {
+                        Icon(imageVector = Icons.Default.MoreVert, contentDescription = "menu_button")
+                    }
+                    DropdownMenu(
+                        expanded = showExpandedMenu,
+                        onDismissRequest = { showExpandedMenu = false}
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text(text = stringResource(id = R.string.delete_fold))},
+                            onClick = {
+                                deleteConfirmationRequired = true
+                                showExpandedMenu = !showExpandedMenu
+                            })
+                        DropdownMenuItem(
+                            onClick = {
+                                duplicateEmail()
+                                showExpandedMenu = !showExpandedMenu
+                            },
+                            text = {Text(text = stringResource(id = R.string.duplicate_fold))}
+                        )
+                    }
+                },
+                navigationIcon = {
+                    IconButton(onClick = navigateUp) {
+                        Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = stringResource(id = R.string.back_button))
+                    }
+                })
+            if (deleteConfirmationRequired) {
+                DeleteConfirmationDialog(
+                    onDeleteConfirm = deleteEmail,
+                    text = R.string.delete_folder_confirm,
+                    onDeleteCancel = { deleteConfirmationRequired = false })
+            }
+                }
+        else {
             TopAppBar(
                 title = { Text(text = title)},
                 modifier = modifier,
@@ -187,7 +274,6 @@ fun OrganizeTopAppBar(
     }else {
         TopAppBar(title = { Text(text = title)}, modifier = modifier)
     }
-
 }
 
 @Composable
@@ -322,14 +408,15 @@ fun CheckBoxes(
 
 @Composable
 fun DeleteConfirmationDialog(
+    modifier: Modifier = Modifier,
     onDeleteConfirm: () -> Unit,
     onDeleteCancel: () -> Unit,
-    modifier: Modifier = Modifier
+    text: Int = R.string.delete_confirm_email,
 ) {
     AlertDialog(
         onDismissRequest = {},
         title = { Text(text = stringResource(id = R.string.attention))},
-        text = { Text(text = stringResource(id = R.string.delete_confirm_email))},
+        text = { Text(text = stringResource(id = text))},
         modifier = modifier.padding(16.dp),
         dismissButton = {
             TextButton(onClick = onDeleteCancel) {

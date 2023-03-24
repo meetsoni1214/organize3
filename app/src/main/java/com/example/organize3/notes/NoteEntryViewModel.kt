@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.organize3.appUi.*
 import com.example.organize3.data.folderWithNotes.FolderWithNotesRepository
+import com.example.organize3.data.folderWithNotes.Note
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -51,4 +52,10 @@ class NoteEntryViewModel(
             noteRepository.updateNote(noteUiState.toNote())
         }
      }
+    suspend fun deleteNote() {
+        noteRepository.deleteNote(noteUiState.toNote())
+    }
+    suspend fun duplicateNote() {
+        noteRepository.insertNote(Note(noteTitle = "copy of ${noteUiState.title}", noteContent = noteUiState.content, folderId = noteUiState.folderId))
+    }
 }

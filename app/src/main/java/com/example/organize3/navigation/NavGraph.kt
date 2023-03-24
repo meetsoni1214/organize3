@@ -213,7 +213,8 @@ fun OrganizeNavHost(
                 },
                 onAddNote = {folderId, noteId->
                     navController.navigateTo("${OrganizeDestination.AddNote.route}/${folderId}/${noteId}")
-                }
+                },
+                navigateBack = {navController.popBackStack()}
             )
         }
         composable(

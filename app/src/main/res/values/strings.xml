@@ -56,6 +56,8 @@
     <string name="save_details">Save Details</string>
     <string name="back_button">Back</string>
     <string name="delete">Delete</string>
+    <string name="delete_fold">Delete Folder</string>
+    <string name="duplicate_fold">Duplicate Folder</string>
     <string name="share">Share</string>
     <string name="share_cap">SHARE</string>
     <string name="cancel">CANCEL</string>
@@ -63,9 +65,12 @@
     <string name="select_field">Select fields which you want to share</string>
     <string name="attention">Attention</string>
     <string name="delete_confirm_email">Are you sure you want to delete the Details?</string>
+    <string name="delete_folder_confirm">Are you sure you want to delete the Folder?</string>
     <string name="email_account_details">Email Account Details</string>
     <string name="edit_email_account">Edit Email Account Details</string>
     <string name="share_email_detail">%1$s \n Email-Id:- %2$s \n Password:- %3$s \n\n Remarks:- %4$s</string>
+    <string name="share_note">%1$s \n \n %2$s</string>
+    <string name="notes">Notes</string>
     <string name="share_application_detail">%1$s \n Login-Id/Username:- %2$s \n Password:- %3$s \n\n Remarks:- %4$s</string>
     <string name="email_account_deleted">Email Account Details has been deleted</string>
     <string name="application_account_deleted">Application Account Details has been deleted</string>
