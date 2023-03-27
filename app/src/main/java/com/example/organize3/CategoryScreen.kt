@@ -63,6 +63,19 @@ fun CategoryScreen(
     val folderHomeUiState by viewModel.folderHomeUiState.collectAsState()
     Scaffold(
         scaffoldState = scaffoldState,
+        drawerContent = {
+                        DrawerHeader()
+                        DrawerBody(
+                            onFolderSelected = onFolderSelected,
+                            onCategorySelected = onItemSelected,
+                            folderList = folderHomeUiState.folderList,
+                            closeDrawer = {
+                                coroutineScope.launch {
+                                    scaffoldState.drawerState.close()
+                                }
+                            }
+                        )
+        },
         floatingActionButton = {
              FloatingActionButton(onClick = {
                  showDialog.value = true
@@ -71,9 +84,16 @@ fun CategoryScreen(
              }
         },
         topBar = {
-        OrganizeTopAppBar(title = stringResource(id = R.string.choose_category),
+        OrganizeTopAppBar(
+            title = stringResource(id = R.string.choose_category),
+            onNavigaationIconClick = {
+                                     coroutineScope.launch {
+                                         scaffoldState.drawerState.open()
+                                     }
+            },
             canNavigateBack = false)
-    }
+    },
+
     ) { innerPadding ->
         CategoriesBody(
             modifier = modifier.padding(innerPadding),
@@ -157,6 +177,207 @@ fun FolderNameDialog(
     )
 }
 
+@Composable
+fun DrawerHeader(
+    modifier: Modifier = Modifier
+) {
+        Column (
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(32.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+                ){
+            Image(
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .size(70.dp),
+                painter = painterResource(id = R.drawable.user_image),
+                contentDescription = stringResource(id = R.string.user),
+                contentScale = ContentScale.Crop
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = stringResource(id = R.string.facebook_title),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = stringResource(id = R.string.facebook_id),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+}
+
+@Composable
+fun DrawerMenuItem(
+    iconDrawableId: Int,
+    text: String,
+    onItemClick:() -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable { onItemClick() }
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            painter = painterResource(id = iconDrawableId),
+            contentDescription = null,
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(text = text)
+    }
+}
+
+@Composable
+fun DrawerMenuInsideItem(
+    modifier: Modifier = Modifier,
+    iconDrawableId: Int,
+    text: Int = 0,
+    folderId: Int = 0,
+    folderName: String = "",
+    isFolderSelected: Boolean = false,
+    onCategoryClick: (Int) -> Unit = {},
+    closeDrawer:() -> Unit,
+    onFolderClick: (Int, String) -> Unit = { _, _ ->
+
+    },
+) {
+    val modifiedText = if (isFolderSelected) folderName else stringResource(id = text)
+
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .clickable {
+                    if (isFolderSelected) {
+                        onFolderClick(folderId, folderName)
+                    } else {
+                        onCategoryClick(text)
+                    }
+                    closeDrawer()
+                }
+                .padding(start = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .size(45.dp)
+                    .padding(12.dp),
+                painter = painterResource(id = iconDrawableId),
+                contentDescription = null,
+                contentScale = ContentScale.Crop
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(text = modifiedText, style = MaterialTheme.typography.bodyMedium)
+        }
+}
+
+@Composable
+fun DrawerBody(
+    modifier: Modifier = Modifier,
+    folderList: List<FolderWithNotes>,
+    onFolderSelected: (Int, String) -> Unit,
+    onCategorySelected: (Int) -> Unit,
+    closeDrawer: () -> Unit
+) {
+    Column(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        var showCategories by rememberSaveable{mutableStateOf(false)}
+        var showFolders by rememberSaveable{mutableStateOf(false)}
+        DrawerMenuItem(
+            iconDrawableId = if (showCategories) R.drawable.ic_dropup else R.drawable.ic_dropdown,
+            text = stringResource(id = R.string.category),
+            onItemClick = {
+                showCategories = !showCategories
+            })
+        if (showCategories) {
+            NavigationCategories(
+                onCategorySelected = onCategorySelected,
+                closeDrawer = closeDrawer
+            )
+        }
+        DrawerMenuItem(
+            iconDrawableId =if (showFolders) R.drawable.ic_dropup else R.drawable.ic_dropdown,
+            text = stringResource(id = R.string.folders),
+            onItemClick = {
+                showFolders = !showFolders
+            })
+        if (showFolders) {
+            NavigationFolders(
+                folderList = folderList,
+                onFolderSelected = onFolderSelected,
+                closeDrawer = closeDrawer
+            )
+        }
+        DrawerMenuItem(
+            iconDrawableId = R.drawable.ic_settings,
+            text = stringResource(id = R.string.settings),
+            onItemClick = { /*TODO*/ })
+        DrawerMenuItem(
+            iconDrawableId = R.drawable.ic_login,
+            text = stringResource(id = R.string.log_out),
+            onItemClick = { /*TODO*/ })
+    }
+}
+
+@Composable
+fun NavigationFolders(
+    modifier: Modifier = Modifier,
+    folderList: List<FolderWithNotes>,
+    onFolderSelected: (Int, String) -> Unit,
+    closeDrawer: () -> Unit
+) {
+    LazyColumn(
+        modifier = modifier
+            .fillMaxWidth()
+    ) {
+        items(items = folderList, key = {it.folder.id}) { item ->
+            DrawerMenuInsideItem(
+                iconDrawableId = R.drawable.folder,
+                folderName = item.folder.folderName,
+                isFolderSelected = true,
+                onFolderClick = onFolderSelected,
+                folderId = item.folder.id,
+                closeDrawer = closeDrawer
+            )
+        }
+    }
+}
+
+@Composable
+fun NavigationCategories(
+    modifier: Modifier = Modifier,
+    onCategorySelected: (Int) -> Unit,
+    closeDrawer: () -> Unit
+) {
+    Column(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        DrawerMenuInsideItem(
+            iconDrawableId = R.drawable.bank_image_2,
+            text = R.string.bank_category,
+            onCategoryClick = onCategorySelected,
+            closeDrawer = closeDrawer
+            )
+        DrawerMenuInsideItem(
+            iconDrawableId = R.drawable.website_logo,
+            text = R.string.application_category,
+            onCategoryClick = onCategorySelected,
+            closeDrawer = closeDrawer
+        )
+        DrawerMenuInsideItem(
+            iconDrawableId = R.drawable.email_icon,
+            text = R.string.email_category,
+            onCategoryClick = onCategorySelected,
+            closeDrawer = closeDrawer
+        )
+    }
+}
 @Composable
 fun CategoriesBody(
     modifier: Modifier = Modifier,

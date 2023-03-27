@@ -9,6 +9,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -58,6 +59,7 @@ fun OrganizeTopAppBar(
     isUpiPin:(Boolean) -> Unit = {},
     isLoginPin:(Boolean) -> Unit = {},
     isTransactionPin:(Boolean) -> Unit = {},
+    onNavigaationIconClick: () -> Unit = {},
     deleteEmail: () -> Unit = {},
     duplicateEmail: () -> Unit = {},
     saveNote:() -> Unit = {},
@@ -272,7 +274,17 @@ fun OrganizeTopAppBar(
                 })
         }
     }else {
-        TopAppBar(title = { Text(text = title)}, modifier = modifier)
+        TopAppBar(
+            title = { Text(text = title)},
+            modifier = modifier,
+            navigationIcon = {
+                IconButton(
+                    onClick = onNavigaationIconClick,
+                ) {
+                    Icon(imageVector = Icons.Default.Menu, contentDescription = null)
+                }
+            }
+        )
     }
 }
 
