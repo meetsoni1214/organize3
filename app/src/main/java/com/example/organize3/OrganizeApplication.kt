@@ -3,8 +3,14 @@
 package com.example.organize3
 
 import android.content.Intent
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -16,11 +22,17 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.organize3.data.folderWithNotes.Folder
+import com.example.organize3.data.folderWithNotes.FolderWithNotes
 import com.example.organize3.navigation.OrganizeNavHost
 
 
@@ -43,6 +55,7 @@ fun OrganizeTopAppBar(
     shareSubject: String = "",
     shareText: String = "",
     isBankAccount: Boolean = false,
+    foldersList: List<FolderWithNotes> = listOf(),
     isBankName:(Boolean) -> Unit = {},
     isAccountHolderName:(Boolean) -> Unit = {},
     isAccountType:(Boolean) -> Unit = {},
@@ -64,11 +77,13 @@ fun OrganizeTopAppBar(
     duplicateEmail: () -> Unit = {},
     saveNote:() -> Unit = {},
     navigateUp: () -> Unit = {},
+    moveNote: (Int) -> Unit = {},
     onCancelClick:(Boolean) -> Unit = {}
 ) {
     var showExpandedMenu by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val showDialog = rememberSaveable { mutableStateOf(false) }
+    val showMoveDialog = rememberSaveable { mutableStateOf(false) }
     var deleteConfirmationRequired by rememberSaveable { mutableStateOf(false) }
     if (canNavigateBack) {
         if (showMenu) {
@@ -90,18 +105,18 @@ fun OrganizeTopAppBar(
                             },
                             text = { Text(text = stringResource(id = R.string.share))})
                         DropdownMenuItem(
-                            text = { Text(text = stringResource(id = R.string.delete))},
-                            onClick = {
-                                deleteConfirmationRequired = true
-                                showExpandedMenu = !showExpandedMenu
-                            })
-                        DropdownMenuItem(
                             onClick = {
                                 duplicateEmail()
                                 showExpandedMenu = !showExpandedMenu
                             },
                             text = {Text(text = stringResource(id = R.string.duplicate))}
                         )
+                        DropdownMenuItem(
+                            text = { Text(text = stringResource(id = R.string.delete))},
+                            onClick = {
+                                deleteConfirmationRequired = true
+                                showExpandedMenu = !showExpandedMenu
+                            })
                     }
                 },
                 navigationIcon = {
@@ -193,6 +208,12 @@ fun OrganizeTopAppBar(
                             text = {Text(text = stringResource(id = R.string.duplicate))}
                         )
                         DropdownMenuItem(
+                            onClick = {
+                                showMoveDialog.value = true
+                                showExpandedMenu = !showExpandedMenu
+                            },
+                            text = { Text(text = stringResource(id = R.string.move_to))})
+                        DropdownMenuItem(
                             text = { Text(text = stringResource(id = R.string.delete))},
                             onClick = {
                                 deleteConfirmationRequired = true
@@ -223,6 +244,17 @@ fun OrganizeTopAppBar(
                 context.startActivity(shareIntent)
                 showDialog.value = false
             }
+
+            if (showMoveDialog.value) {
+                MoveDialog(
+                    foldersList = foldersList,
+                    onDeleteCancel = {
+                        showMoveDialog.value = false
+                    },
+                    moveNote = moveNote
+                )
+            }
+
         }
         else if (showFolderMenu) {
             TopAppBar(
@@ -284,6 +316,77 @@ fun OrganizeTopAppBar(
                     Icon(imageVector = Icons.Default.Menu, contentDescription = null)
                 }
             }
+        )
+    }
+}
+
+@Composable
+fun MoveDialog(
+    modifier: Modifier = Modifier,
+    onDeleteCancel: () -> Unit,
+    moveNote: (Int) -> Unit,
+    foldersList: List<FolderWithNotes>
+) {
+    Dialog(
+        onDismissRequest = {
+                           onDeleteCancel()
+        },
+        content = {
+            Surface(
+                modifier =
+                modifier
+                    .fillMaxWidth()
+                    .heightIn(0.dp, 350.dp),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Column(modifier =
+                Modifier
+                    .padding(22.dp)) {
+                    Text(
+                        text = stringResource(id = R.string.select_dest_folder),
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Divider(modifier = Modifier.fillMaxWidth())
+                    LazyColumn(
+                        modifier = Modifier
+                            .heightIn(0.dp, 350.dp)
+                            .fillMaxWidth()
+                    ) {
+                        items(items = foldersList, key = {it.folder.id}) {item ->
+                            FolderRow(folder = item.folder, moveNote = moveNote)
+                        }
+                    }
+                }
+            }
+
+        }
+    )
+}
+
+@Composable
+fun FolderRow(
+    modifier: Modifier = Modifier,
+    moveNote: (Int) -> Unit,
+    folder: Folder
+) {
+    Row(
+        modifier = modifier
+            .clickable { moveNote(folder.id) }
+            .padding(12.dp)
+            .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.folder),
+            modifier = Modifier
+                .size(30.dp)
+                .clip(CircleShape),
+            contentScale = ContentScale.Crop,
+            contentDescription = null)
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+            text = folder.folderName,
         )
     }
 }

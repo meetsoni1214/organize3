@@ -56,6 +56,8 @@
     <string name="remarks">Remarks</string>
     <string name="save_details">Save Details</string>
     <string name="back_button">Back</string>
+    <string name="move_to">Move to</string>
+    <string name="move">MOVE</string>
     <string name="delete">Delete</string>
     <string name="delete_fold">Delete Folder</string>
     <string name="duplicate_fold">Duplicate Folder</string>
@@ -63,6 +65,7 @@
     <string name="share_cap">SHARE</string>
     <string name="cancel">CANCEL</string>
     <string name="share_account">Share your Account Details</string>
+    <string name="select_dest_folder">Select Destination Folder</string>
     <string name="select_field">Select fields which you want to share</string>
     <string name="attention">Attention</string>
     <string name="delete_confirm_email">Are you sure you want to delete the Details?</string>

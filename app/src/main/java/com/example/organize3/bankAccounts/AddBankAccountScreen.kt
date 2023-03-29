@@ -157,13 +157,13 @@ fun BankItem(
         modifier: Modifier = Modifier) {
             Row(modifier = modifier
                 .fillMaxWidth()
+                .clickable { goToAddOtherDetailScreen(bName, bLogo) }
                 .padding(vertical = 6.dp, horizontal = 20.dp),
             verticalAlignment = Alignment.CenterVertically) {
                 Image(
                     modifier = Modifier
                         .clip(CircleShape)
                         .size(40.dp)
-                        .clickable { goToAddOtherDetailScreen(bName, bLogo)}
                         .padding(8.dp),
                     painter = painterResource(id = bLogo),
                     contentDescription = "Bank logo",
@@ -171,7 +171,6 @@ fun BankItem(
                 Text(
                     modifier = Modifier
                         .padding(8.dp)
-                        .clickable { goToAddOtherDetailScreen(bName, bLogo) }
                     ,
                     text = bName,
                     style = MaterialTheme.typography.titleMedium)

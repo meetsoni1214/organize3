@@ -5,18 +5,26 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.organize3.appUi.*
+import com.example.organize3.data.folderWithNotes.FolderWithNotes
 import com.example.organize3.data.folderWithNotes.FolderWithNotesRepository
 import com.example.organize3.data.folderWithNotes.Note
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class NoteEntryViewModel(
-    savedStateHandle: SavedStateHandle,
-    private val noteRepository: FolderWithNotesRepository
-): ViewModel() {
+        savedStateHandle: SavedStateHandle,
+        private val noteRepository: FolderWithNotesRepository
+    ): ViewModel() {
 
-    val noteId: Int = checkNotNull(savedStateHandle["noteId"])
+        val noteId: Int = checkNotNull(savedStateHandle["noteId"])
     private val folderId: Int = checkNotNull(savedStateHandle["folderId"])
+
+    val foldersUiState: StateFlow<FoldersUiState> = noteRepository.getAllFoldersWithNotes().map { FoldersUiState(it) }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
+            initialValue = FoldersUiState()
+        )
 
     var noteUiState by mutableStateOf(NoteUiState(folderId = folderId))
     private set
@@ -59,3 +67,6 @@ class NoteEntryViewModel(
         noteRepository.insertNote(Note(noteTitle = "copy of ${noteUiState.title}", noteContent = noteUiState.content, folderId = noteUiState.folderId))
     }
 }
+
+data class FoldersUiState(val folderList: List<FolderWithNotes> = listOf())
+

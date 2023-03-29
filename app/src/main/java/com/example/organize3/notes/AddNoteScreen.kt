@@ -14,6 +14,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusState
@@ -40,12 +42,14 @@ fun AddNoteScreen(
     val coroutineScope = rememberCoroutineScope()
     val uiState = viewModel.noteUiState
     val scaffoldState = rememberScaffoldState()
+    val foldersList by viewModel.foldersUiState.collectAsState()
     androidx.compose.material.Scaffold(
         scaffoldState = scaffoldState,
         topBar = {
             OrganizeTopAppBar(
                 title = "",
                 showDone = true,
+                foldersList = foldersList.folderList,
                 saveNote = {
                            coroutineScope.launch {
                                if (viewModel.noteId != -1) {
@@ -53,6 +57,13 @@ fun AddNoteScreen(
                                }else {
                                    viewModel.saveNote()
                                }
+                           }
+                    navigateBack()
+                },
+                moveNote = { folderId ->
+                    viewModel.updateUiState(uiState.copy(folderId = folderId))
+                           coroutineScope.launch {
+                               viewModel.updateNote()
                            }
                     navigateBack()
                 },

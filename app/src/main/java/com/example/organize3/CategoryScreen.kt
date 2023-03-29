@@ -170,7 +170,11 @@ fun FolderNameDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onCreateFolder) {
+            TextButton(
+                onClick = onCreateFolder,
+                enabled = fname.isNotBlank()
+            ) {
+
                 Text(text = stringResource(id = R.string.create))
             }
         }
@@ -247,7 +251,6 @@ fun DrawerMenuInsideItem(
     },
 ) {
     val modifiedText = if (isFolderSelected) folderName else stringResource(id = text)
-
         Row(
             modifier = modifier
                 .fillMaxWidth()
