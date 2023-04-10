@@ -180,7 +180,6 @@ fun LoginCard(
                     .fillMaxWidth()
                     .clickable {
                         onSignInClick()
-                        goToMainScreen()
                     }
                 ,
                 colors = CardDefaults.cardColors(containerColor = Color.Cyan)

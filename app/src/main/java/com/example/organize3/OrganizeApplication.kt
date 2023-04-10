@@ -29,17 +29,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.example.organize3.data.folderWithNotes.Folder
 import com.example.organize3.data.folderWithNotes.FolderWithNotes
-import com.example.organize3.navigation.OrganizeNavHost
 
-
-@Composable
-fun OrganizeApplication(navController: NavHostController = rememberNavController()) {
-    OrganizeNavHost(navController = navController)
-}
+//
+//@Composable
+//fun OrganizeApplication(navController: NavHostController = rememberNavController()) {
+//    OrganizeNavHost(navController = navController)
+//}
 
 /**
  * App bar to display title and conditionally display the back navigation.

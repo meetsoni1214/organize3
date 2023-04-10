@@ -46,15 +46,19 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.example.organize3.data.DataSource.Categories
 import com.example.organize3.data.folderWithNotes.Folder
 import com.example.organize3.data.folderWithNotes.FolderWithNotes
 import com.example.organize3.folder.FolderHomeViewModel
+import com.example.organize3.presentation.sign_in.UserData
 import kotlinx.coroutines.launch
 
 @Composable
 fun CategoryScreen(
     modifier: Modifier = Modifier,
+    userData: UserData?,
+    onSignOut: () -> Unit,
     viewModel: FolderHomeViewModel = viewModel(factory = AppViewModelProvider.Factory),
     onFolderSelected: (Int, String) -> Unit,
         onItemSelected: (Int) -> Unit) {
@@ -66,7 +70,9 @@ fun CategoryScreen(
     Scaffold(
         scaffoldState = scaffoldState,
         drawerContent = {
-                        DrawerHeader()
+                        DrawerHeader(
+                            userData = userData
+                        )
                         DrawerBody(
                             onFolderSelected = onFolderSelected,
                             onCategorySelected = onItemSelected,
@@ -75,7 +81,8 @@ fun CategoryScreen(
                                 coroutineScope.launch {
                                     scaffoldState.drawerState.close()
                                 }
-                            }
+                            },
+                            onSignOut = onSignOut
                         )
         },
         floatingActionButton = {
@@ -185,6 +192,7 @@ fun FolderNameDialog(
 
 @Composable
 fun DrawerHeader(
+    userData: UserData?,
     modifier: Modifier = Modifier
 ) {
         Column (
@@ -194,24 +202,49 @@ fun DrawerHeader(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
                 ){
-            Image(
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .size(70.dp),
-                painter = painterResource(id = R.drawable.user_image),
-                contentDescription = stringResource(id = R.string.user),
-                contentScale = ContentScale.Crop
-            )
+            if (userData?.profilePictureUrl != null) {
+                AsyncImage(
+                    model = userData.profilePictureUrl,
+                    contentDescription = stringResource(id = R.string.user),
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .size(70.dp),
+                    contentScale = ContentScale.Crop
+                )
+            }else {
+                Image(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .size(70.dp),
+                    painter = painterResource(id = R.drawable.user_image),
+                    contentDescription = stringResource(id = R.string.user),
+                    contentScale = ContentScale.Crop
+                )
+            }
             Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = stringResource(id = R.string.facebook_title),
-                style = MaterialTheme.typography.titleMedium,
-            )
+            if (userData?.userName != null) {
+                Text(
+                    text = userData.userName,
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }else {
+                Text(
+                    text = stringResource(id = R.string.facebook_title),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }
             Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                text = stringResource(id = R.string.facebook_id),
-                style = MaterialTheme.typography.bodyMedium,
-            )
+            if (userData?.userEmail != null) {
+                Text(
+                    text = userData.userEmail,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }else {
+                Text(
+                    text = stringResource(id = R.string.facebook_id),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
         }
 }
 
@@ -288,6 +321,7 @@ fun DrawerBody(
     folderList: List<FolderWithNotes>,
     onFolderSelected: (Int, String) -> Unit,
     onCategorySelected: (Int) -> Unit,
+    onSignOut: () -> Unit,
     closeDrawer: () -> Unit
 ) {
     Column(
@@ -327,7 +361,7 @@ fun DrawerBody(
         DrawerMenuItem(
             iconDrawableId = R.drawable.ic_login,
             text = stringResource(id = R.string.log_out),
-            onItemClick = { /*TODO*/ })
+            onItemClick = onSignOut)
     }
 }
 
@@ -464,15 +498,6 @@ fun CategoriesBody(
 
             }
         }
-//        LazyColumn(
-//            modifier = Modifier.fillMaxWidth(),
-//            verticalArrangement = Arrangement.spacedBy(12.dp),
-//            contentPadding = PaddingValues(16.dp)
-//        ) {
-//            items(items = folderList, key = {it.id}) {item ->
-//                FolderCard(folder = item)
-//            }
-//        }
     }
 }
 
@@ -535,21 +560,3 @@ fun CategoryCard(
         }
     }
     }
-
-
-//
-//@Preview(showBackground = true)
-//@Composable
-//fun CategoryPreview() {
-//    Organize3Theme {
-//        Categorycard(imageId = R.drawable.bank_category_image, textId = R.string.bank_category, modifier = Modifier.padding(8.dp))
-//    }
-//}
-//
-//@Preview(showBackground = true)
-//@Composable
-//fun CategoriesPreview() {
-//    Organize3Theme {
-//        CategoryScreen()
-//    }
-//}

@@ -76,7 +76,7 @@
     <string name="share_note">%1$s \n \n %2$s</string>
     <string name="notes">Notes</string>
     <string name="user">User</string>
-    <string name="default_web_client_id">317369513880-r17lnlqblej8ubr0u1c35n4l6rvjf3es.apps.googleusercontent.com</string>
+    <string name="myDefault_web_client_id">317369513880-r17lnlqblej8ubr0u1c35n4l6rvjf3es.apps.googleusercontent.com</string>
     <string name="share_application_detail">%1$s \n Login-Id/Username:- %2$s \n Password:- %3$s \n\n Remarks:- %4$s</string>
     <string name="email_account_deleted">Email Account Details has been deleted</string>
     <string name="application_account_deleted">Application Account Details has been deleted</string>

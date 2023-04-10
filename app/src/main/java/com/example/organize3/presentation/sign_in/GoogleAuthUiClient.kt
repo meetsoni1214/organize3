@@ -44,7 +44,8 @@ class GoogleAuthUiClient(
                     UserData(
                         userId = uid,
                         userName = displayName,
-                        profilePictureUrl = photoUrl.toString()
+                        profilePictureUrl = photoUrl.toString(),
+                        userEmail = email
                     )
                 },
                 errorMessage = null
@@ -72,7 +73,8 @@ class GoogleAuthUiClient(
         UserData(
             userId = uid,
             userName = displayName,
-            profilePictureUrl = photoUrl?.toString()
+            profilePictureUrl = photoUrl?.toString(),
+            userEmail = email
         )
     }
     private fun buildSignInRequest(): BeginSignInRequest {
@@ -81,7 +83,7 @@ class GoogleAuthUiClient(
                 GoogleIdTokenRequestOptions.builder()
                     .setSupported(true)
                     .setFilterByAuthorizedAccounts(false)
-                    .setServerClientId(context.getString(R.string.default_web_client_id))
+                    .setServerClientId(context.getString(R.string.myDefault_web_client_id))
                     .build()
             )
             .setAutoSelectEnabled(true)
