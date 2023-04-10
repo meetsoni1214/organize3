@@ -18,6 +18,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
+import androidx.compose.material.DismissDirection
+import androidx.compose.material.DismissValue
 import androidx.compose.material.SnackbarResult
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -251,6 +253,7 @@ fun DrawerMenuInsideItem(
     },
 ) {
     val modifiedText = if (isFolderSelected) folderName else stringResource(id = text)
+
         Row(
             modifier = modifier
                 .fillMaxWidth()

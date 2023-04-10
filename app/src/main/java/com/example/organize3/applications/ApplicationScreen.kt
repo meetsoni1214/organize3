@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterialApi::class)
+@file:OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 
 package com.example.organize3.applications
 
@@ -14,12 +14,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
+import androidx.compose.material.DismissDirection
 import androidx.compose.material.SnackbarResult
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.material3.Card
+import androidx.compose.material3.DismissValue
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -193,7 +195,7 @@ fun ApplicationList(
                 background = {
                     val color by animateColorAsState(
                         when (dismissState.targetValue) {
-                            DismissValue.Default -> Color.White
+                            androidx.compose.material.DismissValue.Default -> Color.White
                             else -> Color.Red
                         }
                     )
@@ -201,7 +203,7 @@ fun ApplicationList(
                     val icon = Icons.Default.Delete
 
                     val scale by animateFloatAsState(
-                        if (dismissState.targetValue == DismissValue.Default) 0.75f else 1f
+                        if (dismissState.targetValue == androidx.compose.material.DismissValue.Default) 0.75f else 1f
                     )
                     Box (
                         modifier = Modifier

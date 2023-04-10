@@ -1,9 +1,11 @@
 package com.example.organize3.notes
 
+import android.graphics.Bitmap
 import androidx.compose.runtime.*
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import coil.ImageLoader
 import com.example.organize3.appUi.*
 import com.example.organize3.data.folderWithNotes.FolderWithNotes
 import com.example.organize3.data.folderWithNotes.FolderWithNotesRepository
@@ -64,7 +66,7 @@ class NoteEntryViewModel(
         noteRepository.deleteNote(noteUiState.toNote())
     }
     suspend fun duplicateNote() {
-        noteRepository.insertNote(Note(noteTitle = "copy of ${noteUiState.title}", noteContent = noteUiState.content, folderId = noteUiState.folderId))
+        noteRepository.insertNote(Note(noteTitle = "copy of ${noteUiState.title}", noteContent = noteUiState.content, folderId = noteUiState.folderId, imageUris = noteUiState.uris))
     }
 }
 

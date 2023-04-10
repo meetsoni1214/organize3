@@ -2,6 +2,7 @@
 
 package com.example.organize3
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -14,16 +15,14 @@ import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role.Companion.Image
@@ -37,13 +36,26 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.organize3.presentation.sign_in.SignInState
 
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
     goToMainScreen:() -> Unit,
+    state: SignInState,
+    onSignInClick: () -> Unit,
     goToRegisterScreen:() -> Unit
 ) {
+    val context = LocalContext.current
+    LaunchedEffect(key1 = state.signInError) {
+        state.signInError?.let { error ->
+            Toast.makeText(
+                context,
+                error,
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
     Scaffold (
         modifier = modifier.fillMaxSize()
             ){ values ->
@@ -52,7 +64,8 @@ fun LoginScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(values),
         goToMainScreen = goToMainScreen,
-            goToRegisterScreen = goToRegisterScreen
+            goToRegisterScreen = goToRegisterScreen,
+            onSignInClick = onSignInClick
         )
     }
 }
@@ -61,6 +74,7 @@ fun LoginScreen(
 fun LoginScreenBody(
     modifier: Modifier = Modifier,
     goToMainScreen: () -> Unit,
+    onSignInClick: () -> Unit,
     goToRegisterScreen: () -> Unit
 ) {
     Column(
@@ -79,7 +93,8 @@ fun LoginScreenBody(
         )
         LoginCard(
             Modifier.padding(start = 16.dp, end = 16.dp, top = 28.dp),
-            goToMainScreen = goToMainScreen
+            goToMainScreen = goToMainScreen,
+            onSignInClick = onSignInClick
         )
         RegisterCard(
             Modifier.padding(start = 16.dp, end = 16.dp, top = 90.dp),
@@ -91,6 +106,7 @@ fun LoginScreenBody(
 @Composable
 fun LoginCard(
     modifier: Modifier = Modifier,
+    onSignInClick: () -> Unit,
     goToMainScreen: () -> Unit,
 ) {
     var passwordVisible by rememberSaveable { mutableStateOf(false)}
@@ -163,7 +179,8 @@ fun LoginCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
-                               goToMainScreen()
+                        onSignInClick()
+                        goToMainScreen()
                     }
                 ,
                 colors = CardDefaults.cardColors(containerColor = Color.Cyan)

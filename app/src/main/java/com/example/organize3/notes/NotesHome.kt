@@ -1,5 +1,5 @@
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
-    ExperimentalMaterialApi::class
+    ExperimentalMaterialApi::class, ExperimentalFoundationApi::class
 )
 
 package com.example.organize3.notes
@@ -8,14 +8,14 @@ import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
+import androidx.compose.material.DismissDirection
+import androidx.compose.material.DismissValue
 import androidx.compose.material.SnackbarResult
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -25,10 +25,8 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -61,6 +59,7 @@ fun NotesHome(
 //    val folderUiState by viewModel.folder.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     val scaffoldState = rememberScaffoldState()
+    var longPressClick by rememberSaveable { mutableStateOf(false) }
     Scaffold (
         floatingActionButton = {
             FloatingActionButton(onClick = {onAddNote(viewModel.folderId, -1)}) {
@@ -94,6 +93,9 @@ fun NotesHome(
             onNoteClick = navigateToNote,
             modifier = modifier.padding(values),
             folderId = viewModel.folderId,
+            onLongClick = {value ->
+                longPressClick = value
+            },
             deleteNote = {note ->
                 coroutineScope.launch {
                     viewModel.deleteNote(note)
@@ -120,6 +122,7 @@ fun NotesScreen(
     notesList: List<Note>,
     onNoteClick: (Int, Int) -> Unit,
     folderId: Int,
+    onLongClick: (Boolean) -> Unit,
     deleteNote: (Note) -> Unit
     ) {
     if (notesList.isEmpty()) {
@@ -138,7 +141,7 @@ fun NotesScreen(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            NotesList(onNoteClick = { onNoteClick(folderId, it.id) }, deleteNote = deleteNote, notesList = notesList)
+            NotesList(onNoteClick = { onNoteClick(folderId, it.id) }, deleteNote = deleteNote, notesList = notesList, onLongClick = onLongClick)
         }
     }
 }
@@ -148,8 +151,10 @@ fun NotesList(
     modifier: Modifier = Modifier,
     onNoteClick: (Note) -> Unit,
     notesList: List<Note>,
+    onLongClick: (Boolean) -> Unit,
     deleteNote: (Note) -> Unit
 ) {
+    var multipleSelect by rememberSaveable { mutableStateOf(false) }
     LazyColumn(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -179,7 +184,6 @@ fun NotesList(
                     )
                     val alignment = Alignment.CenterEnd
                     val icon = Icons.Default.Delete
-
                     val scale by animateFloatAsState(
                         if (dismissState.targetValue == DismissValue.Default) 0.75f else 1f
                     )
@@ -207,10 +211,17 @@ fun NotesList(
                             .fillMaxWidth()
                             .align(alignment = Alignment.CenterVertically)
                     ) {
-                        NoteCard(onNoteClick = onNoteClick, note = note)
+                        NoteCard(onNoteClick = onNoteClick,
+                            note = note,
+                            onLongClick = {value ->
+                                multipleSelect = value
+                            },
+                            multipleSelect = true
+                        )
                     }
                 }
             )
+
         }
     }
 }
@@ -219,12 +230,30 @@ fun NotesList(
 fun NoteCard(
     modifier: Modifier = Modifier,
     onNoteClick: (Note) -> Unit,
+    onLongClick: (Boolean) -> Unit,
+    multipleSelect: Boolean,
     note: Note
 ) {
+    var longClick by rememberSaveable { mutableStateOf(false) }
+    var isSelected by rememberSaveable { mutableStateOf(false) }
     Card(
         modifier = modifier
             .padding(4.dp)
-            .clickable { onNoteClick(note) }
+            .combinedClickable(
+                onClick = {
+                    if (longClick) {
+                        isSelected = !isSelected
+                    } else {
+                        onNoteClick(note)
+                    }
+                },
+                onLongClick = {
+                    longClick = true
+                    onLongClick(true)
+                    isSelected = true
+                }
+            )
+
             .fillMaxWidth()
     ){
         Row(
@@ -232,36 +261,60 @@ fun NoteCard(
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.notes),
-                modifier = Modifier
-                    .size(60.dp)
-                    .clip(CircleShape)
-                    .padding(6.dp),
-                contentDescription = stringResource(id = R.string.notes_icon),
-                contentScale = ContentScale.Crop
-            )
-            Column(
-                modifier = Modifier.fillMaxWidth()
+            Row(modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = note.noteTitle,
+                Image(
+                    painter = painterResource(id = R.drawable.notes),
                     modifier = Modifier
-                        .padding(4.dp)
-                        .padding(top = 4.dp)
-                    ,
-                    style = MaterialTheme.typography.titleMedium
+                        .size(60.dp)
+                        .clip(CircleShape)
+                        .padding(6.dp),
+                    contentDescription = stringResource(id = R.string.notes_icon),
+                    contentScale = ContentScale.Crop
                 )
-                Text(
-                    text = note.noteContent,
+                Column(
                     modifier = Modifier
-                        .padding(4.dp)
-                        .padding(end = 4.dp, bottom = 4.dp)
-                    ,
-                    style = MaterialTheme.typography.labelMedium,
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 5
-                )
+                        .fillMaxWidth()
+                ) {
+                    Text(
+                        text = note.noteTitle,
+                        modifier = Modifier
+                            .padding(4.dp)
+                            .padding(top = 4.dp)
+                        ,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        text = note.noteContent,
+                        modifier = Modifier
+                            .padding(4.dp)
+                            .padding(end = 4.dp, bottom = 4.dp)
+                        ,
+                        style = MaterialTheme.typography.labelMedium,
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 5
+                    )
+                }
+            }
+            if (longClick) {
+                if (isSelected) {
+                    Image(
+                        painter = painterResource(id = R.drawable.outline_circle),
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .padding(12.dp)
+                            .size(24.dp),
+                        contentDescription = null)
+                }else {
+                    Icon(
+                        modifier = Modifier
+                            .padding(12.dp),
+                        painter = painterResource(id = R.drawable.check_circle),
+                        contentDescription = null)
+                }
             }
         }
     }

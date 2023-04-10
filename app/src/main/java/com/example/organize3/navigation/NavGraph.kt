@@ -1,7 +1,13 @@
 package com.example.organize3.navigation
 
+import android.app.Activity.RESULT_OK
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -22,6 +28,7 @@ import com.example.organize3.emailAccounts.EmailDetailScreen
 import com.example.organize3.emailAccounts.EmailEditScreen
 import com.example.organize3.notes.AddNoteScreen
 import com.example.organize3.notes.NotesHome
+import com.example.organize3.presentation.sign_in.SignInViewModel
 
 @Composable
 fun OrganizeNavHost(
@@ -34,6 +41,18 @@ fun OrganizeNavHost(
         modifier = modifier
     ) {
         composable(route = OrganizeDestination.LoginScreen.route) {
+            val viewModel = viewModel<SignInViewModel>()
+            val state by viewModel.state.collectAsStateWithLifecycle()
+
+            val launcher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.StartIntentSenderForResult(),
+                onResult = { result ->
+                    if (result.resultCode == RESULT_OK) {
+                        lifecycle
+                    }
+                }
+            )
+
             LoginScreen(goToMainScreen = {
                 navController.navigateTo(OrganizeDestination.Categories.route)},
             goToRegisterScreen = {
