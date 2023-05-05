@@ -11,5 +11,6 @@ data class EmailAccount(
     @ColumnInfo(name = "title") val accountTitle: String,
     @ColumnInfo(name = "email") val accountEmail: String,
     @ColumnInfo(name = "password") val accountPassword: String,
-    @ColumnInfo(name = "remarks") val accountRemarks: String
+    @ColumnInfo(name = "remarks") val accountRemarks: String,
+    @ColumnInfo(name = "isArchived") val isArchived: Int = 0
 )

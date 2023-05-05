@@ -52,6 +52,7 @@ fun OrganizeTopAppBar(
     shareSubject: String = "",
     shareText: String = "",
     isBankAccount: Boolean = false,
+    isArchived: Boolean = false,
     foldersList: List<FolderWithNotes> = listOf(),
     isBankName:(Boolean) -> Unit = {},
     isAccountHolderName:(Boolean) -> Unit = {},
@@ -72,6 +73,7 @@ fun OrganizeTopAppBar(
     onNavigaationIconClick: () -> Unit = {},
     deleteEmail: () -> Unit = {},
     duplicateEmail: () -> Unit = {},
+    unArchive: () -> Unit = {},
     saveNote:() -> Unit = {},
     navigateUp: () -> Unit = {},
     moveNote: (Int) -> Unit = {},
@@ -95,6 +97,14 @@ fun OrganizeTopAppBar(
                         expanded = showExpandedMenu,
                         onDismissRequest = { showExpandedMenu = false}
                     ) {
+                        if (isArchived) {
+                            DropdownMenuItem(
+                                text = { Text(text = stringResource(id = R.string.unarchived))},
+                                onClick = {
+                                    unArchive()
+                                    showExpandedMenu = !showExpandedMenu
+                                })
+                        }
                         DropdownMenuItem(
                             onClick = {
                                     showDialog.value = true
@@ -122,9 +132,18 @@ fun OrganizeTopAppBar(
                     }
                 })
             if (deleteConfirmationRequired) {
-                DeleteConfirmationDialog(
-                    onDeleteConfirm = deleteEmail,
-                    onDeleteCancel = { deleteConfirmationRequired = false })
+                if (isArchived) {
+                    DeleteConfirmationDialog(
+                        onDeleteConfirm = deleteEmail,
+                        onDeleteCancel = { deleteConfirmationRequired = false},
+                        actionText = R.string.my_delete,
+                        text = R.string.delete_details_confirm
+                    )
+                }else {
+                    DeleteConfirmationDialog(
+                        onDeleteConfirm = deleteEmail,
+                        onDeleteCancel = { deleteConfirmationRequired = false })
+                }
             }
             if (showDialog.value) {
                 if (isBankAccount) {
@@ -523,7 +542,8 @@ fun DeleteConfirmationDialog(
     modifier: Modifier = Modifier,
     onDeleteConfirm: () -> Unit,
     onDeleteCancel: () -> Unit,
-    text: Int = R.string.delete_confirm_email,
+    actionText: Int = R.string.move,
+    text: Int = R.string.archive_confirm_email,
 ) {
     AlertDialog(
         onDismissRequest = {},
@@ -532,12 +552,12 @@ fun DeleteConfirmationDialog(
         modifier = modifier.padding(16.dp),
         dismissButton = {
             TextButton(onClick = onDeleteCancel) {
-                Text(text = stringResource(id = R.string.no))
+                Text(text = stringResource(id = R.string.cancel))
             }
         },
         confirmButton = {
             TextButton(onClick = onDeleteConfirm) {
-                Text(text = stringResource(id = R.string.yes))
+                Text(text = stringResource(id = actionText))
             }
         }
     )

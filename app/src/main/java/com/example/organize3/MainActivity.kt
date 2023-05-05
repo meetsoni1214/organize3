@@ -26,13 +26,13 @@ import com.example.organize3.applications.AddApplicationScreen
 import com.example.organize3.applications.AddedApplicationScreen
 import com.example.organize3.applications.ApplicationDetailScreen
 import com.example.organize3.applications.ApplicationEditScreen
+import com.example.organize3.archived.ArchivedScreen
 import com.example.organize3.bankAccounts.*
 import com.example.organize3.emailAccounts.AddEmailAccountScreen
 import com.example.organize3.emailAccounts.AddedEmailAccountsScreen
 import com.example.organize3.emailAccounts.EmailDetailScreen
 import com.example.organize3.emailAccounts.EmailEditScreen
 import com.example.organize3.navigation.OrganizeDestination
-import com.example.organize3.navigation.navigateTo
 import com.example.organize3.notes.AddNoteScreen
 import com.example.organize3.notes.NotesHome
 import com.example.organize3.presentation.sign_in.GoogleAuthUiClient
@@ -143,6 +143,9 @@ class MainActivity : ComponentActivity() {
                                         ).show()
                                         navController.navigateTo(OrganizeDestination.LoginScreen.route)
                                     }
+                                },
+                                onArchivedSelected = {
+                                    navController.navigateTo(OrganizeDestination.ArchivedScreen.route)
                                 }
                             )
                         }
@@ -168,8 +171,8 @@ class MainActivity : ComponentActivity() {
                             AddedEmailAccountsScreen(
                                 onAddEmail = {navController.navigateTo(OrganizeDestination.AddEmailAccountScreen.route)},
                                 onNavigateUp = {navController.navigateUp()},
-                                navigateToEmailAccount = { id ->
-                                    navController.navigateTo(OrganizeDestination.EmailAccountDetailScreen.withArgs(id))
+                                navigateToEmailAccount = { id, isArchived ->
+                                    navController.navigateTo("${OrganizeDestination.EmailAccountDetailScreen.route}/${id}/${isArchived}" )
                                 }
                             )
                         }
@@ -188,9 +191,13 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable(
-                            route = OrganizeDestination.EmailAccountDetailScreen.route + "/{emailId}",
+                            route = OrganizeDestination.EmailAccountDetailScreen.route + "/{emailId}" + "/{isArchived}",
                             arguments = listOf(
                                 navArgument("emailId") {
+                                    type = NavType.IntType
+                                    defaultValue = 0
+                                },
+                                navArgument("isArchived") {
                                     type = NavType.IntType
                                     defaultValue = 0
                                 }
@@ -336,6 +343,18 @@ class MainActivity : ComponentActivity() {
                                 onNavigateUp = { navController.navigateUp()},
                                 navigateBack = { navController.popBackStack() },
 //                goToEditBankScreen = {navController.navigateTo(OrganizeDestination.EditBankScreen.route)}
+                            )
+                        }
+
+                        composable(
+                            route = OrganizeDestination.ArchivedScreen.route,
+
+                        ) {
+                            ArchivedScreen(onNavigateUp = {
+                                navController.navigateUp() },
+                                onCardClick = {id, isArchived ->
+                                    navController.navigateTo("${OrganizeDestination.EmailAccountDetailScreen.route}/${id}/${isArchived}")
+                                }
                             )
                         }
 //        composable(

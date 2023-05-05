@@ -10,6 +10,7 @@ import com.example.organize3.applications.ApplicationDetailViewModel
 import com.example.organize3.applications.ApplicationEditViewModel
 import com.example.organize3.applications.ApplicationEntryViewModel
 import com.example.organize3.applications.ApplicationViewModel
+import com.example.organize3.archived.ArchivedHomeViewModel
 import com.example.organize3.bankAccounts.BankAccountDetailViewModel
 import com.example.organize3.bankAccounts.BankAccountEditViewModel
 import com.example.organize3.bankAccounts.BankAccountEntryViewModel
@@ -122,6 +123,15 @@ object AppViewModelProvider {
             NoteEntryViewModel(
                 noteRepository = organizeApplication().container.folderWithNotesRepository,
                 savedStateHandle = this.createSavedStateHandle()
+            )
+        }
+        // Initializer for ArchivedHomeViewModel
+        initializer {
+            ArchivedHomeViewModel(
+                emailRepository = organizeApplication().container.emailRepository,
+                notesRepository = organizeApplication().container.folderWithNotesRepository,
+                applicationRepository = organizeApplication().container.applicationRepository,
+                bankAccountRepository =  organizeApplication().container.bankAccountRepository
             )
         }
       }

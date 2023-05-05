@@ -27,4 +27,6 @@ interface FolderWithNotesRepository {
 
     fun getNote(noteId: Int): Flow<Note>
 
+    fun getArchivedNotes(): Flow<List<Note>>
+
 }

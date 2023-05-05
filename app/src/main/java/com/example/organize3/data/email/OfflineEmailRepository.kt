@@ -10,6 +10,10 @@ class OfflineEmailRepository(private val emailDao: EmailDao): EmailRepository {
         return emailDao.getEmailAccounts()
     }
 
+    override fun getArchivedEmailsStream(): Flow<List<EmailAccount>> {
+        return emailDao.getArchivedEmailAccounts()
+    }
+
     override fun getItemStream(id: Int): Flow<EmailAccount?> {
         return emailDao.getEmailAccount(id)
     }

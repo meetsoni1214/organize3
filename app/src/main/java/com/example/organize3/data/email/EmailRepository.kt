@@ -1,6 +1,6 @@
 package com.example.organize3.data.email
 
-import com.example.organize3.data.email.EmailAccount
+
 import kotlinx.coroutines.flow.Flow
 
 
@@ -13,6 +13,8 @@ interface EmailRepository {
      * Retrieve all the items from the the given data source.
      */
     fun getAllEmailsStream(): Flow<List<EmailAccount>>
+
+    fun getArchivedEmailsStream(): Flow<List<EmailAccount>>
 
     /**
      * Retrieve an item from the given data source that matches with the [id].

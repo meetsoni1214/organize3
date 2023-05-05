@@ -26,8 +26,11 @@ interface ApplicationDao {
     @Query("SELECT * from application_account WHERE id = :id")
     fun getApplicationAccount(id: Int): Flow<ApplicationAccount>
 
-    @Query("SELECT * from application_account ORDER BY title ASC")
+    @Query("SELECT * from application_account WHERE isArchived = 0 ORDER BY title ASC")
     fun getApplicationAccounts(): Flow<List<ApplicationAccount>>
+
+    @Query("SELECT * from application_account WHERE isArchived = 1 ORDER BY title ASC")
+    fun getArchivedApplicationAccounts(): Flow<List<ApplicationAccount>>
 
 
 }

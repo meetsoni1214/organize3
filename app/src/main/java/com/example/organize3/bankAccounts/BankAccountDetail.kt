@@ -157,7 +157,7 @@ fun BankAccountDetailScreen(
                 onCancelClick = {isCancelClick = it},
                 deleteEmail = {
                     coroutineScope.launch {
-                        viewModel.deleteBankAccount()
+                        viewModel.archiveBankAccount()
                         navigateBack()
                     }
                 },

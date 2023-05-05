@@ -11,6 +11,10 @@ class OfflineApplicationRepository(private val applicationDao: ApplicationDao):
         return applicationDao.getApplicationAccounts()
     }
 
+    override fun getArchivedApplicationsStream(): Flow<List<ApplicationAccount>> {
+        return applicationDao.getArchivedApplicationAccounts()
+    }
+
     override fun getApplicationStream(id: Int): Flow<ApplicationAccount?> {
         return applicationDao.getApplicationAccount(id)
     }

@@ -8,6 +8,7 @@ data class ApplicationUiState (
     val username: String = "",
     val password: String = "",
     val remarks: String = "",
+    val isArchived: Int = 0,
     val actionEnabled: Boolean = false
         )
 
@@ -17,7 +18,8 @@ fun ApplicationUiState.toApplicationAccount(): ApplicationAccount = ApplicationA
     accountTitle = title,
     accountUsername = username,
     accountRemarks = remarks,
-    accountPassword = password
+    accountPassword = password,
+    isArchived = isArchived
 )
 
 // Extension function to convert [ApplicationAccount] to [ApplicationUiState]
@@ -26,7 +28,8 @@ fun ApplicationAccount.toApplicationUiState(actionEnabled: Boolean = false): App
     title = accountTitle,
     username = accountUsername,
     password = accountPassword,
-    remarks = accountRemarks
+    remarks = accountRemarks,
+    isArchived = isArchived
 )
 
 fun ApplicationUiState.isValid(): Boolean {

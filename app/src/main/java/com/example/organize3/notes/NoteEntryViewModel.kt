@@ -62,9 +62,10 @@ class NoteEntryViewModel(
             noteRepository.updateNote(noteUiState.toNote())
         }
      }
-    suspend fun deleteNote() {
-        noteRepository.deleteNote(noteUiState.toNote())
+    suspend fun archiveNote() {
+        noteRepository.updateNote(noteUiState.copy(isArchived = 1).toNote())
     }
+
     suspend fun duplicateNote() {
         noteRepository.insertNote(Note(noteTitle = "copy of ${noteUiState.title}", noteContent = noteUiState.content, folderId = noteUiState.folderId, imageUris = noteUiState.uris))
     }

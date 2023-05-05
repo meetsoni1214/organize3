@@ -11,5 +11,6 @@ data class Note(
     @ColumnInfo(name = "folderId") val folderId: Int,
     @ColumnInfo(name = "title") val noteTitle: String,
     @ColumnInfo(name = "content") val noteContent: String,
-    @ColumnInfo(name = "uris") val imageUris: List<String>
+    @ColumnInfo(name = "uris") val imageUris: List<String>,
+    @ColumnInfo(name = "isArchived") val isArchived: Int = 0
 )

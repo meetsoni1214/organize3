@@ -12,6 +12,8 @@ interface ApplicationRepository {
      * Retrieve all the items from the the given data source.
      */
     fun getAllApplicationsStream(): Flow<List<ApplicationAccount>>
+
+    fun getArchivedApplicationsStream(): Flow<List<ApplicationAccount>>
     /**
      * Retrieve an item from the given data source that matches with the [id].
      */

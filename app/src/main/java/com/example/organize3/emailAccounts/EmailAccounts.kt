@@ -53,7 +53,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddedEmailAccountsScreen(
-    navigateToEmailAccount: (Int) -> Unit,
+    navigateToEmailAccount: (Int, Int) -> Unit,
     modifier: Modifier = Modifier,
     canNavigateBack: Boolean = true,
     onNavigateUp:() -> Unit,
@@ -81,18 +81,16 @@ fun AddedEmailAccountsScreen(
             emailList = emailHomeUiState.emailList,
             onEmailClick = navigateToEmailAccount,
             deleteEmail = { emailAccount ->
-                coroutineScope.launch {
-                    viewModel.deleteEmail(emailAccount)
-
-                }
+                    viewModel.archiveEmail(emailAccount)
                 coroutineScope.launch {
                     val snackbarResult = scaffoldState.snackbarHostState.showSnackbar(
-                        message = "Item deleted!",
+                        message = "Item moved to Archived!",
                         actionLabel = "Undo"
                     )
                     when (snackbarResult) {
                         SnackbarResult.Dismissed -> Log.d("SnackbarDemo", "Dismissed")
                         SnackbarResult.ActionPerformed -> {
+                            viewModel.undoArchiveEmail(emailAccount)
                         }
                     }
                 }
@@ -105,7 +103,7 @@ fun AddedEmailAccountsScreen(
 fun EmailScreen(
     modifier: Modifier = Modifier,
     emailList: List<EmailAccount>,
-    onEmailClick: (Int) -> Unit,
+    onEmailClick: (Int, Int) -> Unit,
     deleteEmail: (EmailAccount) -> Unit
 ) {
     if (emailList.isEmpty()) {
@@ -119,12 +117,13 @@ fun EmailScreen(
         Column(modifier = modifier
             .fillMaxWidth()
             .padding(16.dp)) {
-            EmailList(onEmailClick = {onEmailClick(it.id)}, emailList = emailList, deleteEmail = deleteEmail)
+            EmailList(onEmailClick = {onEmailClick(it.id, 0)}, emailList = emailList, deleteEmail = deleteEmail)
         }
     }
 
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun EmailList(
     modifier: Modifier = Modifier,
@@ -139,7 +138,6 @@ fun EmailList(
             if (dismissState.isDismissed(DismissDirection.EndToStart)) {
                 deleteEmail(email)
             }
-
             SwipeToDismiss(
                 state = dismissState,
                 modifier = Modifier

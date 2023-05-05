@@ -27,8 +27,11 @@ class BankAccountHomeViewModel(
         private const val TIMEOUT_MILLIS = 5_000L
     }
 
-    suspend fun deleteBankAccount(bankAccount: BankAccount) {
-        bankAccountRepository.deleteBankAccount(bankAccount)
+    suspend fun archiveBankAccount(bankAccount: BankAccount) {
+        bankAccountRepository.updateBankAccount(bankAccount.copy(isArchived = 1))
+    }
+    suspend fun undoArchiveBankAccount(bankAccount: BankAccount) {
+        bankAccountRepository.updateBankAccount(bankAccount.copy(isArchived = 0))
     }
 }
 

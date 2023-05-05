@@ -24,7 +24,10 @@ interface EmailDao {
     @Query("SELECT * from emailaccount WHERE id = :id")
     fun getEmailAccount(id: Int): Flow<EmailAccount>
 
-    @Query("SELECT * from emailaccount ORDER BY title ASC")
+    @Query("SELECT * from emailaccount WHERE isArchived = 0 ORDER BY title ASC")
     fun getEmailAccounts(): Flow<List<EmailAccount>>
+
+    @Query("SELECT * from emailaccount WHERE isArchived = 1 ORDER BY title ASC")
+    fun getArchivedEmailAccounts(): Flow<List<EmailAccount>>
 
 }

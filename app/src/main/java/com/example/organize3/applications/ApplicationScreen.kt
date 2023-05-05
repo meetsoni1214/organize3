@@ -111,7 +111,7 @@ fun AddedApplicationScreen(
             ,
             deleteApplication = { applicationAccount ->
                 coroutineScope.launch {
-                    viewModel.deleteApplication(applicationAccount)
+                    viewModel.archiveApplication(applicationAccount)
 
                 }
                 coroutineScope.launch {
@@ -122,7 +122,7 @@ fun AddedApplicationScreen(
                     when (snackbarResult) {
                         SnackbarResult.Dismissed -> Log.d("SnackbarDemo", "Dismissed")
                         SnackbarResult.ActionPerformed -> {
-                            viewModel.insertApplication(applicationAccount)
+
                         }
                     }
                 }

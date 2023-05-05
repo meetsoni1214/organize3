@@ -81,7 +81,7 @@ fun AddedBankAccountScreen(
             bankAccountList = bankAccountHomeUiState.bankAccounts,
             deleteAccount = {bankAccount ->
                 coroutineScope.launch {
-                    viewModel.deleteBankAccount(bankAccount)
+                    viewModel.archiveBankAccount(bankAccount)
                 }
                 coroutineScope.launch {
                     val snackbarResult = scaffoldState.snackbarHostState.showSnackbar(

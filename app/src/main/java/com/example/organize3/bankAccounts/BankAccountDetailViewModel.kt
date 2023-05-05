@@ -29,8 +29,8 @@ class BankAccountDetailViewModel(
         private const val TIMEOUT_MILLIS = 5_000L
     }
 
-    suspend fun deleteBankAccount() {
-        bankAccountRepository.deleteBankAccount(uiState.value.toBankAccount())
+    suspend fun archiveBankAccount() {
+        bankAccountRepository.updateBankAccount(uiState.value.copy(isArchived = 1).toBankAccount())
     }
     suspend fun duplicateBankAccount() {
         bankAccountRepository.insertBankAccount(

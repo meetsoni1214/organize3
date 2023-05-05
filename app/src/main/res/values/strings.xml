@@ -58,7 +58,8 @@
     <string name="back_button">Back</string>
     <string name="move_to">Move to</string>
     <string name="move">MOVE</string>
-    <string name="delete">Delete</string>
+    <string name="delete">delete</string>
+    <string name="my_delete">DELETE</string>
     <string name="delete_fold">Delete Folder</string>
     <string name="duplicate_fold">Duplicate Folder</string>
     <string name="share">Share</string>
@@ -68,8 +69,12 @@
     <string name="select_dest_folder">Select Destination Folder</string>
     <string name="select_field">Select fields which you want to share</string>
     <string name="attention">Attention</string>
-    <string name="delete_confirm_email">Are you sure you want to delete the Details?</string>
+    <string name="archived_details">Archived Details</string>
+    <string name="archived">Archived</string>
+    <string name="unarchived">Unarchive</string>
+    <string name="archive_confirm_email">On deleting the details it will moved to Archived.</string>
     <string name="delete_folder_confirm">Are you sure you want to delete the Folder?</string>
+    <string name="delete_details_confirm">Are you sure you want to delete the details? It will be deleted permanently.</string>
     <string name="email_account_details">Email Account Details</string>
     <string name="edit_email_account">Edit Email Account Details</string>
     <string name="share_email_detail">%1$s \n Email-Id:- %2$s \n Password:- %3$s \n\n Remarks:- %4$s</string>

@@ -54,7 +54,7 @@ fun ApplicationDetailScreen(
                 uiState.value.remarks),
                 deleteEmail = {
                     coroutineScope.launch {
-                        viewModel.deleteApplication()
+                        viewModel.archiveApplication()
                         navigateBack()
                     }
                 },

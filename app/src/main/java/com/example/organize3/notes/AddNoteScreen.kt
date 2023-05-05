@@ -94,7 +94,7 @@ fun AddNoteScreen(
                 shareSubject = stringResource(id = R.string.notes),
                 deleteEmail = {
                     coroutineScope.launch {
-                        viewModel.deleteNote()
+                        viewModel.archiveNote()
                         navigateBack()
                     }
                 },

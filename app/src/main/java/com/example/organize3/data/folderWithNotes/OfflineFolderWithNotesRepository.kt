@@ -52,4 +52,8 @@ class OfflineFolderWithNotesRepository(private val folderWithNotesDao: FolderWit
         return folderWithNotesDao.getNote(noteId)
     }
 
+    override fun getArchivedNotes(): Flow<List<Note>> {
+        return folderWithNotesDao.getArchivedNotes()
+    }
+
 }

@@ -28,5 +28,6 @@ data class BankAccount (
     @ColumnInfo(name = "upi_pin") val upiPin: String = "",
     @ColumnInfo(name = "have_banking_app") val haveBankingApp: Boolean = true,
     @ColumnInfo(name = "login_pin") val loginPin: String = "",
-    @ColumnInfo(name = "t_pin") val transactionPin: String = ""
+    @ColumnInfo(name = "t_pin") val transactionPin: String = "",
+    @ColumnInfo(name = "isArchived") val isArchived: Int = 0
         )

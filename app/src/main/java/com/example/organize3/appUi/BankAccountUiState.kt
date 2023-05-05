@@ -25,6 +25,7 @@ data class BankAccountUiState (
     val haveBankingApp: Boolean = true,
     val loginPin: String = "",
     val transactionPin: String = "",
+    val isArchived: Int = 0,
     val actionEnabled: Boolean = false
         )
 // Extension function to convert [BankAccountUiState] to [BankAccount].
@@ -49,7 +50,8 @@ fun BankAccountUiState.toBankAccount(): BankAccount = BankAccount(
     upiPin = upiPin,
     haveBankingApp = haveBankingApp,
     loginPin = loginPin,
-    transactionPin = transactionPin
+    transactionPin = transactionPin,
+    isArchived = isArchived
 )
 
 // Extension function to convert [BankAccount] to [BankAccountUiState]
@@ -74,7 +76,8 @@ fun BankAccount.toBankAccountUiState(actionEnabled: Boolean = false): BankAccoun
     upiPin = upiPin,
     haveBankingApp = haveBankingApp,
     loginPin = loginPin,
-    transactionPin = transactionPin
+    transactionPin = transactionPin,
+    isArchived = isArchived
 )
 
 fun BankAccountUiState.isValid():Boolean

@@ -43,4 +43,7 @@ interface FolderWithNotesDao {
 
     @Query("SELECT * FROM notes WHERE id = :noteId")
     fun getNote(noteId: Int): Flow<Note>
+
+    @Query("SELECT * FROM notes WHERE isArchived = 1")
+    fun getArchivedNotes(): Flow<List<Note>>
 }

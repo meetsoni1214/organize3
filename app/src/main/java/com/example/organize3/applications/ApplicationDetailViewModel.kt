@@ -31,8 +31,8 @@ class ApplicationDetailViewModel(
 
     }
 
-    suspend fun deleteApplication() {
-        applicationRepository.deleteApplication(uiState.value.toApplicationAccount())
+    suspend fun archiveApplication() {
+        applicationRepository.updateApplication(uiState.value.copy(isArchived = 1).toApplicationAccount())
     }
     suspend fun duplicateApplication() {
 //        val title = uiState.value.title

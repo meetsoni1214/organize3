@@ -8,6 +8,7 @@ data class EmailUiState (
     val email: String = "",
     val password: String = "",
     val remarks: String = "",
+    val isArchived: Int = 0,
     val actionEnabled: Boolean = false
 )
 // Extension function to convert [EmailUiState] to [EmailAccount].
@@ -16,7 +17,8 @@ fun EmailUiState.toEmailAccount(): EmailAccount = EmailAccount(
     accountTitle = title,
     accountEmail = email,
     accountPassword = password,
-    accountRemarks = remarks
+    accountRemarks = remarks,
+    isArchived = isArchived
 )
 
 // Extension function to convert [EmailAccount] to [EmailUiState]
@@ -25,7 +27,8 @@ fun EmailAccount.toEmailUiState(actionEnabled: Boolean = false): EmailUiState = 
     title = accountTitle,
     email = accountEmail,
     password = accountPassword,
-    remarks = accountRemarks
+    remarks = accountRemarks,
+    isArchived = isArchived
 )
 
 fun EmailUiState.isValid(): Boolean {

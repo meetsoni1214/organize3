@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 /**
  * View Model to retrieve all items in the Room database.
@@ -25,8 +26,13 @@ class EmailHomeViewModel(
     companion object {
         private const val TIMEOUT_MILLIS = 5_000L
     }
-    suspend fun deleteEmail(emailAccount: EmailAccount) {
-        emailRepository.deleteEmail(emailAccount)
+    fun archiveEmail(emailAccount: EmailAccount) {
+        viewModelScope.launch {
+            emailRepository.updateEmail(emailAccount.copy(isArchived = 1))
+        }
+    }
+    suspend fun undoArchiveEmail(emailAccount: EmailAccount) {
+        emailRepository.updateEmail(emailAccount.copy(isArchived = 0))
     }
 }
 /**

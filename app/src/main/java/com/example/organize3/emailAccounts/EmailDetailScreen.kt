@@ -26,6 +26,7 @@ import com.example.organize3.AppViewModelProvider
 import com.example.organize3.OrganizeTopAppBar
 import com.example.organize3.R
 import com.example.organize3.appUi.EmailUiState
+import com.example.organize3.appUi.toEmailAccount
 import kotlinx.coroutines.launch
 
 @Composable
@@ -39,37 +40,53 @@ fun EmailDetailScreen(
     var showSnackbar by remember { mutableStateOf(false) }
     val uiState = viewModel.uiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
+    val isArchived = viewModel.isArchived
     val scaffoldState: ScaffoldState = rememberScaffoldState()
     androidx.compose.material.Scaffold (
         scaffoldState = scaffoldState,
         topBar = {
-            OrganizeTopAppBar(
-                title = stringResource(id = R.string.email_account_details),
-                canNavigateBack = true,
-                navigateUp = navigateBack,
-                showMenu = true,
-                shareSubject = stringResource(id = R.string.email_account_details),
-                shareText = stringResource(
-                    R.string.share_email_detail,
-                    uiState.value.title,
-                    uiState.value.email,
-                    uiState.value.password,
-                    uiState.value.remarks
-                ),
-                deleteEmail = {
-                    coroutineScope.launch {
-                        viewModel.deleteEmail()
-                        navigateBack()
-                        showSnackbar = true
+                OrganizeTopAppBar(
+                    title = stringResource(id = R.string.email_account_details),
+                    canNavigateBack = true,
+                    navigateUp = navigateBack,
+                    showMenu = true,
+                    isArchived = (isArchived == 1),
+                    shareSubject = stringResource(id = R.string.email_account_details),
+                    shareText = stringResource(
+                        R.string.share_email_detail,
+                        uiState.value.title,
+                        uiState.value.email,
+                        uiState.value.password,
+                        uiState.value.remarks
+                    ),
+                    unArchive = {
+                                coroutineScope.launch {
+                                    viewModel.unArchiveEmail()
+                                    navigateBack()
+                                }
+                    },
+                    deleteEmail = {
+                        if (isArchived == 1) {
+                            coroutineScope.launch {
+                                viewModel.deleteEmail(uiState.value.toEmailAccount())
+                                navigateBack()
+                            }
+                        }else {
+                            coroutineScope.launch {
+                                viewModel.archiveEmail()
+                                navigateBack()
+                                showSnackbar = true
+                            }
+                        }
+                    },
+                    duplicateEmail = {
+                        coroutineScope.launch {
+                            viewModel.duplicateEmail()
+                            navigateBack()
+                        }
                     }
-                },
-                duplicateEmail = {
-                    coroutineScope.launch {
-                        viewModel.duplicateEmail()
-                        navigateBack()
-                    }
-                }
-            )
+                )
+
         },
         floatingActionButton = {
             FloatingActionButton(

@@ -10,6 +10,7 @@ data class NoteUiState(
     val content: String = "",
     val uris: List<String> = listOf(),
     val folderId: Int,
+    val isArchived: Int = 0,
     val actionEnabled: Boolean = false
 )
 fun NoteUiState.toNote(): Note = Note(
@@ -17,7 +18,8 @@ fun NoteUiState.toNote(): Note = Note(
     noteTitle = title,
     folderId = folderId,
     noteContent = content,
-    imageUris = uris
+    imageUris = uris,
+    isArchived = isArchived
     )
 
 fun Note.toNoteUiState(actionEnabled: Boolean = false): NoteUiState = NoteUiState(
@@ -25,6 +27,7 @@ fun Note.toNoteUiState(actionEnabled: Boolean = false): NoteUiState = NoteUiStat
     title = noteTitle,
     folderId = folderId,
     content = noteContent,
+    isArchived = isArchived,
     uris = imageUris
 )
 

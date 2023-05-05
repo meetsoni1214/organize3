@@ -14,6 +14,8 @@ interface BankAccountRepository {
      */
     fun getAllBankAccountsStream(): Flow<List<BankAccount>>
 
+    fun getArchivedBankAccountsStream(): Flow<List<BankAccount>>
+
     /**
      * Retrieve an item from the given data source that matches with the [id].
      */

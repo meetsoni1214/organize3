@@ -24,6 +24,9 @@ interface BankAccountDao {
     @Query("SELECT * from bankaccount WHERE id = :id")
     fun getBankAccount(id: Int): Flow<BankAccount>
 
-    @Query("SELECT * from bankaccount ORDER BY bank_name ASC")
+    @Query("SELECT * from bankaccount WHERE isArchived = 0 ORDER BY bank_name ASC")
     fun getBankAccounts(): Flow<List<BankAccount>>
+
+    @Query("SELECT * from bankaccount WHERE isArchived = 1 ORDER BY bank_name ASC")
+    fun getArchivedBankAccounts(): Flow<List<BankAccount>>
 }

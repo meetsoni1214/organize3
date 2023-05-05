@@ -55,11 +55,11 @@ class ApplicationViewModel(
             saveSocials(socials)
             selectSocials(false)
     }
-    suspend fun deleteApplication(applicationAccount: ApplicationAccount) {
-        applicationRepository.deleteApplication(applicationAccount)
+    suspend fun archiveApplication(applicationAccount: ApplicationAccount) {
+        applicationRepository.updateApplication(applicationAccount.copy(isArchived = 1))
     }
-    suspend fun insertApplication(applicationAccount: ApplicationAccount) {
-        applicationRepository.insertApplication(applicationAccount)
+    suspend fun undoArchiveApplication(applicationAccount: ApplicationAccount) {
+        applicationRepository.updateApplication(applicationAccount.copy(isArchived = 0))
     }
 }
 /**

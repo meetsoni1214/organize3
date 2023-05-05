@@ -16,6 +16,7 @@ class EmailAccountDetailViewModel (
         ): ViewModel(){
 
     private val emailId: Int = checkNotNull(savedStateHandle["emailId"])
+    val isArchived: Int = checkNotNull(savedStateHandle["isArchived"])
 
     val uiState:StateFlow<EmailUiState> = emailRepository.getItemStream(emailId)
         .filterNotNull()
@@ -31,12 +32,20 @@ class EmailAccountDetailViewModel (
         private const val TIMEOUT_MILLIS = 5_000L
     }
 
-    suspend fun deleteEmail() {
-        emailRepository.deleteEmail(uiState.value.toEmailAccount())
+    suspend fun archiveEmail() {
+        emailRepository.updateEmail(uiState.value.copy(isArchived = 1).toEmailAccount())
+    }
+
+    suspend fun deleteEmail(emailAccount: EmailAccount) {
+        emailRepository.deleteEmail(emailAccount)
+    }
+
+    suspend fun unArchiveEmail() {
+        emailRepository.updateEmail(uiState.value.copy(isArchived = 0).toEmailAccount())
     }
 
     suspend fun duplicateEmail() {
-        emailRepository.insertEmail(EmailAccount(accountTitle = "copy of ${uiState.value.title}", accountEmail = uiState.value.email, accountPassword = uiState.value.password, accountRemarks = uiState.value.remarks))
+        emailRepository.insertEmail(EmailAccount(accountTitle = "copy of ${uiState.value.title}", accountEmail = uiState.value.email, accountPassword = uiState.value.password, accountRemarks = uiState.value.remarks, isArchived = uiState.value.isArchived))
     }
 
 }

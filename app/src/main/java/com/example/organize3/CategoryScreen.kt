@@ -61,6 +61,7 @@ fun CategoryScreen(
     onSignOut: () -> Unit,
     viewModel: FolderHomeViewModel = viewModel(factory = AppViewModelProvider.Factory),
     onFolderSelected: (Int, String) -> Unit,
+    onArchivedSelected: () -> Unit,
         onItemSelected: (Int) -> Unit) {
     val showDialog = rememberSaveable { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
@@ -76,6 +77,7 @@ fun CategoryScreen(
                         DrawerBody(
                             onFolderSelected = onFolderSelected,
                             onCategorySelected = onItemSelected,
+                            onArchivedSelected = onArchivedSelected,
                             folderList = folderHomeUiState.folderList,
                             closeDrawer = {
                                 coroutineScope.launch {
@@ -320,6 +322,7 @@ fun DrawerBody(
     modifier: Modifier = Modifier,
     folderList: List<FolderWithNotes>,
     onFolderSelected: (Int, String) -> Unit,
+    onArchivedSelected: () -> Unit,
     onCategorySelected: (Int) -> Unit,
     onSignOut: () -> Unit,
     closeDrawer: () -> Unit
@@ -354,6 +357,13 @@ fun DrawerBody(
                 closeDrawer = closeDrawer
             )
         }
+        DrawerMenuItem(
+            iconDrawableId = R.drawable.ic_archived,
+            text = stringResource(id = R.string.archived),
+            onItemClick = {
+                onArchivedSelected()
+                closeDrawer()
+            })
         DrawerMenuItem(
             iconDrawableId = R.drawable.ic_settings,
             text = stringResource(id = R.string.settings),
@@ -418,6 +428,7 @@ fun NavigationCategories(
         )
     }
 }
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun CategoriesBody(
     modifier: Modifier = Modifier,

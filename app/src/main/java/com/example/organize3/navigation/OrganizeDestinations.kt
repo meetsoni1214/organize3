@@ -21,6 +21,7 @@ sealed class OrganizeDestination(val route: String) {
     object RegisterScreen: OrganizeDestination("register_screen")
     object Notes: OrganizeDestination("notes_home_screen")
     object AddNote: OrganizeDestination("add_note_screen")
+    object ArchivedScreen: OrganizeDestination("archived_screen")
 
     fun withArgs(vararg args: Int): String {
         return buildString {

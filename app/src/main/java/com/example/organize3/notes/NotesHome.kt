@@ -60,6 +60,7 @@ fun NotesHome(
     val coroutineScope = rememberCoroutineScope()
     val scaffoldState = rememberScaffoldState()
     var longPressClick by rememberSaveable { mutableStateOf(false) }
+
     Scaffold (
         floatingActionButton = {
             FloatingActionButton(onClick = {onAddNote(viewModel.folderId, -1)}) {
@@ -89,7 +90,9 @@ fun NotesHome(
         }
             ){ values ->
         NotesScreen(
-            notesList = notesHomeUiState.notesList,
+            notesList = notesHomeUiState.notesList.filter { note ->
+                note.isArchived == 0
+            } ,
             onNoteClick = navigateToNote,
             modifier = modifier.padding(values),
             folderId = viewModel.folderId,
@@ -98,7 +101,7 @@ fun NotesHome(
             },
             deleteNote = {note ->
                 coroutineScope.launch {
-                    viewModel.deleteNote(note)
+                    viewModel.archiveNote(note)
                 }
                 coroutineScope.launch {
                     val snackBarResult = scaffoldState.snackbarHostState.showSnackbar(
