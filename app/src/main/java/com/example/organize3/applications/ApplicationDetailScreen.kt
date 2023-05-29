@@ -25,6 +25,7 @@ import com.example.organize3.AppViewModelProvider
 import com.example.organize3.OrganizeTopAppBar
 import com.example.organize3.R
 import com.example.organize3.appUi.ApplicationUiState
+import com.example.organize3.appUi.toApplicationAccount
 import com.example.organize3.emailAccounts.OtherDetails
 import com.example.organize3.emailAccounts.TitleRow
 import kotlinx.coroutines.launch
@@ -39,12 +40,14 @@ fun ApplicationDetailScreen(
 ) {
     val uiState = viewModel.uiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
+    val isArchived = viewModel.isArchived
     Scaffold(
         topBar = {
             OrganizeTopAppBar(
                 title = stringResource(id = R.string.application_account),
                 canNavigateBack = true,
                 showMenu = true,
+                isArchived = (isArchived == 1),
                 navigateUp = navigateBack,
                 shareSubject = stringResource(id = R.string.application_account),
                 shareText = stringResource(id = R.string.share_application_detail,
@@ -52,11 +55,23 @@ fun ApplicationDetailScreen(
                 uiState.value.username,
                 uiState.value.password,
                 uiState.value.remarks),
+                unArchive = {
+                            coroutineScope.launch {
+                                viewModel.unArchiveApplication()
+                                navigateBack()
+                            }
+                },
                 deleteEmail = {
                     coroutineScope.launch {
-                        viewModel.archiveApplication()
+                        viewModel.deleteApplication(uiState.value.toApplicationAccount())
                         navigateBack()
                     }
+                },
+                archive = {
+                          coroutineScope.launch {
+                              viewModel.archiveApplication()
+                              navigateBack()
+                          }
                 },
                 duplicateEmail = {
                     coroutineScope.launch {

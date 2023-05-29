@@ -20,6 +20,7 @@ class NoteEntryViewModel(
 
         val noteId: Int = checkNotNull(savedStateHandle["noteId"])
     private val folderId: Int = checkNotNull(savedStateHandle["folderId"])
+    val isArchived: Int = checkNotNull(savedStateHandle["isArchived"])
 
     val foldersUiState: StateFlow<FoldersUiState> = noteRepository.getAllFoldersWithNotes().map { FoldersUiState(it) }
         .stateIn(
@@ -65,9 +66,15 @@ class NoteEntryViewModel(
     suspend fun archiveNote() {
         noteRepository.updateNote(noteUiState.copy(isArchived = 1).toNote())
     }
+    suspend fun unArchiveNote() {
+        noteRepository.updateNote(noteUiState.copy(isArchived = 0).toNote())
+    }
+    suspend fun deleteNote(note: Note) {
+        noteRepository.deleteNote(note)
+    }
 
     suspend fun duplicateNote() {
-        noteRepository.insertNote(Note(noteTitle = "copy of ${noteUiState.title}", noteContent = noteUiState.content, folderId = noteUiState.folderId, imageUris = noteUiState.uris))
+        noteRepository.insertNote(Note(noteTitle = "copy of ${noteUiState.title}", noteContent = noteUiState.content, folderId = noteUiState.folderId, imageUris = noteUiState.uris, isArchived = noteUiState.isArchived))
     }
 }
 

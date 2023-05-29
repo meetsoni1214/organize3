@@ -81,8 +81,8 @@ fun AddedEmailAccountsScreen(
             emailList = emailHomeUiState.emailList,
             onEmailClick = navigateToEmailAccount,
             deleteEmail = { emailAccount ->
-                    viewModel.archiveEmail(emailAccount)
                 coroutineScope.launch {
+                    viewModel.archiveEmail(emailAccount)
                     val snackbarResult = scaffoldState.snackbarHostState.showSnackbar(
                         message = "Item moved to Archived!",
                         actionLabel = "Undo"
@@ -152,11 +152,11 @@ fun EmailList(
                     val color by animateColorAsState(
                         when (dismissState.targetValue) {
                             DismissValue.Default -> Color.White
-                            else -> Color.Red
+                            else -> Color.Green
                         }
                     )
                     val alignment = Alignment.CenterEnd
-                    val icon = Icons.Default.Delete
+                    val icon = R.drawable.ic_archived
 
                     val scale by animateFloatAsState(
                         if (dismissState.targetValue == DismissValue.Default) 0.75f else 1f
@@ -169,9 +169,8 @@ fun EmailList(
                         ,
                         contentAlignment = alignment
                     ){
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = "Delete Icon",
+                        Image(painter = painterResource(id = icon),
+                            contentDescription = "Archive Icon",
                             modifier = Modifier.scale(scale)
                         )
                     }

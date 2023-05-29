@@ -97,7 +97,7 @@ fun CategoryScreen(
         topBar = {
         OrganizeTopAppBar(
             title = stringResource(id = R.string.choose_category),
-            onNavigaationIconClick = {
+            onNavigationIconClick = {
                                      coroutineScope.launch {
                                          scaffoldState.drawerState.open()
                                      }

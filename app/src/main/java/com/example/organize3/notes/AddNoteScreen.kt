@@ -36,6 +36,7 @@ import com.example.organize3.AppViewModelProvider
 import com.example.organize3.OrganizeTopAppBar
 import com.example.organize3.R
 import com.example.organize3.appUi.NoteUiState
+import com.example.organize3.appUi.toNote
 import kotlinx.coroutines.launch
 import org.checkerframework.checker.units.qual.s
 
@@ -49,6 +50,7 @@ fun AddNoteScreen(
     val coroutineScope = rememberCoroutineScope()
     val uiState = viewModel.noteUiState
     val scaffoldState = rememberScaffoldState()
+    val isArchived = viewModel.isArchived
     val foldersList by viewModel.foldersUiState.collectAsState()
     var isBottomBarVisible by remember { mutableStateOf(true) }
     val multiplePhotoLauncher = rememberLauncherForActivityResult(
@@ -66,6 +68,7 @@ fun AddNoteScreen(
             OrganizeTopAppBar(
                 title = "",
                 showDone = true,
+                isArchived = (isArchived == 1),
                 foldersList = foldersList.folderList,
                 saveNote = {
                            coroutineScope.launch {
@@ -94,9 +97,21 @@ fun AddNoteScreen(
                 shareSubject = stringResource(id = R.string.notes),
                 deleteEmail = {
                     coroutineScope.launch {
-                        viewModel.archiveNote()
+                        viewModel.deleteNote(uiState.toNote())
                         navigateBack()
                     }
+                },
+                archive = {
+                          coroutineScope.launch {
+                              viewModel.archiveNote()
+                              navigateBack()
+                          }
+                },
+                unArchive = {
+                            coroutineScope.launch {
+                                viewModel.unArchiveNote()
+                                navigateBack()
+                            }
                 },
                 duplicateEmail = {
                     coroutineScope.launch {

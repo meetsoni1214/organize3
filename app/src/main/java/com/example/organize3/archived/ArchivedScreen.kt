@@ -1,5 +1,6 @@
 package com.example.organize3.archived
 
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -20,22 +21,31 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.organize3.AppViewModelProvider
 import com.example.organize3.OrganizeTopAppBar
 import com.example.organize3.R
+import com.example.organize3.data.application.ApplicationAccount
+import com.example.organize3.data.bankAccount.BankAccount
 import com.example.organize3.data.email.EmailAccount
+import com.example.organize3.data.folderWithNotes.Note
 
 @Composable
 fun ArchivedScreen(
     modifier: Modifier = Modifier,
     canNavigateBack: Boolean = true,
     onNavigateUp: () -> Unit,
-    onCardClick: (Int, Int) -> Unit,
+    onCardClick: (Int, Int, Int, CardType) -> Unit,
     viewModel: ArchivedHomeViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
-    val archivedHomeUiState by viewModel.archivedHomeUiState.collectAsState()
+    val emailArchivedHomeUiState by viewModel.emailArchivedState.collectAsState()
+    val applicationArchivedHomeUiState by viewModel.applicationArchivedState.collectAsState()
+    val bankAccountArchivedHomeUiState by viewModel.bankAccountArchivedState.collectAsState()
+    val noteArchivedHomeUiState by viewModel.noteArchivedState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     Scaffold(
         topBar = {
@@ -48,7 +58,10 @@ fun ArchivedScreen(
     ) { values ->
         ArchivedScreenBody(
             modifier = modifier.padding(values),
-            emailList = archivedHomeUiState.emailList,
+            emailList = emailArchivedHomeUiState.emailList,
+            applicationList = applicationArchivedHomeUiState.applicationList,
+            bankAccountList = bankAccountArchivedHomeUiState.bankAccountList,
+            notesList = noteArchivedHomeUiState.notesList,
             onCardClick = onCardClick
         )
     }
@@ -58,7 +71,10 @@ fun ArchivedScreen(
 fun ArchivedScreenBody(
     modifier: Modifier = Modifier,
     emailList: List<EmailAccount>,
-    onCardClick: (Int, Int) -> Unit
+    applicationList: List<ApplicationAccount>,
+    bankAccountList: List<BankAccount>,
+    notesList: List<Note>,
+    onCardClick: (Int, Int, Int, CardType) -> Unit
 ) {
     LazyColumn(
         modifier = modifier
@@ -66,14 +82,163 @@ fun ArchivedScreenBody(
             .fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(items = emailList, key = { it.id}) {email ->
-            ArchivedCard(
-                imageRes = R.drawable.email_icon,
-                contentDes = stringResource(id = R.string.email_icon),
-                title = email.accountTitle,
+
+//        items(items = applicationList, key = {it.id}) {application ->
+//            ArchivedCard(
+//                imageRes = R.drawable.website_logo,
+//                contentDes = stringResource(id = R.string.appLogo),
+//                title = application.accountTitle,
+//                onCardClick = onCardClick,
+//                cardId = application.id,
+//                cardType = CardType.ApplicationAccountCard
+//            )
+//        }
+//        items(items = bankAccountList, key = {it.id}) { bankAccount ->
+//            ArchiveBankAccountCard(
+//                onCardClick = onCardClick,
+//                bankAccount = bankAccount,
+//                cardType = CardType.BankAccountCard
+//            )
+//        }
+//
+        items(items = notesList, key = {it.id}) { note ->
+            ArchivedNoteCard(
+                note = note,
                 onCardClick = onCardClick,
-                cardId = email.id
+                cardType = CardType.NoteCard,
+                contentDes = stringResource(id = R.string.notes_icon),
+                imageRes = R.drawable.notes
             )
+        }
+
+//        items(items = emailList, key = { it.id}) {email ->
+//            ArchivedCard(
+//                imageRes = R.drawable.email_icon,
+//                contentDes = stringResource(id = R.string.email_icon),
+//                title = email.accountTitle,
+//                onCardClick = onCardClick,
+//                cardId = email.id,
+//                cardType = CardType.EmailAccountCard
+//            )
+//        }
+
+
+
+    }
+}
+
+@Composable
+fun ArchivedNoteCard(
+    modifier: Modifier = Modifier,
+    note: com.example.organize3.data.folderWithNotes.Note,
+    onCardClick: (Int, Int, Int, CardType) -> Unit,
+    cardType: CardType,
+    contentDes: String,
+    imageRes: Int
+) {
+
+    Card(
+        modifier = modifier
+            .padding(4.dp)
+            .clickable {
+                onCardClick(note.folderId, note.id, note.isArchived, cardType)
+            }
+            .fillMaxWidth()
+    ) {
+        Row(
+            modifier =  Modifier
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.notes),
+                    modifier = Modifier
+                        .size(60.dp)
+                        .clip(CircleShape)
+                        .padding(6.dp),
+                    contentDescription = contentDes,
+                    contentScale = ContentScale.Crop
+                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                    Text(
+                        text = note.noteTitle,
+                        modifier = Modifier
+                            .padding(4.dp)
+                            .padding(top = 4.dp),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Text(
+                        text = note.noteContent,
+                        modifier = Modifier
+                            .padding(4.dp)
+                            .padding(end = 4.dp, bottom = 4.dp),
+                        style = MaterialTheme.typography.labelMedium,
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 5
+                    )
+                }
+            }
+        }
+    }
+
+}
+@Composable
+fun ArchiveBankAccountCard(
+    modifier: Modifier = Modifier,
+    bankAccount: BankAccount,
+    onCardClick: (Int, Int, Int, CardType) -> Unit,
+    cardType: CardType
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable {
+                onCardClick(0, bankAccount.id, 1, cardType)
+            }
+            .padding(4.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(end = 6.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = painterResource(id = bankAccount.bankLogo),
+                contentDescription = stringResource(id = R.string.bank_logo),
+                modifier = Modifier
+                    .size(70.dp)
+                    .clip(CircleShape)
+                    .padding(8.dp),
+                contentScale = ContentScale.Crop
+            )
+            Column(
+                horizontalAlignment = Alignment.Start,
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = bankAccount.bankName,
+                    modifier = Modifier
+                        .padding(start = 8.dp, top = 12.dp),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = bankAccount.accountHolderName,
+                    modifier = Modifier
+                        .padding(start = 8.dp, bottom = 12.dp),
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
         }
     }
 }
@@ -83,15 +248,16 @@ fun ArchivedCard(
     modifier: Modifier = Modifier,
     imageRes: Int,
     contentDes: String,
-    onCardClick: (Int, Int) -> Unit,
+    onCardClick: (Int, Int, Int, CardType) -> Unit,
     cardId: Int,
-    title: String
+    title: String,
+    cardType: CardType
 ) {
     Card (
         modifier = modifier
             .padding(4.dp)
             .clickable {
-                onCardClick(cardId, 1)
+                onCardClick(0, cardId, 1, cardType)
             }
             .fillMaxWidth()
             ){

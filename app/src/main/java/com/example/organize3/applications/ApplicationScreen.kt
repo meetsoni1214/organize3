@@ -54,7 +54,7 @@ fun AddedApplicationScreen(
     onNavigateUp:() -> Unit,
     canNavigateBack: Boolean = true,
     onAddApplication:() -> Unit,
-    navigateToApplicationAccount: (Int) -> Unit,
+    navigateToApplicationAccount: (Int, Int) -> Unit,
     viewModel: ApplicationViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val applicationUiState by viewModel.applicationHomeUiState.collectAsState()
@@ -143,7 +143,7 @@ fun AddedApplicationScreen(
 fun ApplicationScreen(
     modifier: Modifier = Modifier,
     applicationList: List<ApplicationAccount>,
-    onApplicationClick: (Int) -> Unit,
+    onApplicationClick: (Int, Int) -> Unit,
     deleteApplication: (ApplicationAccount) -> Unit,
     onShowSnackbar: (ApplicationAccount) -> Unit
 //    isSocials: () -> Unit = {}
@@ -170,7 +170,7 @@ fun ApplicationScreen(
 fun ApplicationList(
     modifier: Modifier = Modifier,
     applicationList: List<ApplicationAccount>,
-    onApplicationClick: (Int) -> Unit,
+    onApplicationClick: (Int, Int) -> Unit,
     deleteApplication: (ApplicationAccount) -> Unit,
     onShowSnackbar: (ApplicationAccount) -> Unit
 ) {
@@ -196,11 +196,11 @@ fun ApplicationList(
                     val color by animateColorAsState(
                         when (dismissState.targetValue) {
                             androidx.compose.material.DismissValue.Default -> Color.White
-                            else -> Color.Red
+                            else -> Color.Green
                         }
                     )
                     val alignment = Alignment.CenterEnd
-                    val icon = Icons.Default.Delete
+                    val icon = R.drawable.ic_archived
 
                     val scale by animateFloatAsState(
                         if (dismissState.targetValue == androidx.compose.material.DismissValue.Default) 0.75f else 1f
@@ -213,9 +213,9 @@ fun ApplicationList(
                         ,
                         contentAlignment = alignment
                             ){
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = "Delete Icon",
+                        Image(
+                            painter = painterResource(id = icon),
+                            contentDescription = "Archive Icon",
                             modifier = Modifier.scale(scale)
                         )
                     }
@@ -241,12 +241,12 @@ fun ApplicationList(
 @Composable
 fun ApplicationCard(
     modifier: Modifier = Modifier,
-    onApplicationClick: (Int) -> Unit,
+    onApplicationClick: (Int, Int) -> Unit,
     application: ApplicationAccount
 ) {
     Card(modifier = modifier
         .padding(4.dp)
-        .clickable { onApplicationClick(application.id) }
+        .clickable { onApplicationClick(application.id, 0) }
         .fillMaxWidth()
     ) {
         Row(modifier = Modifier

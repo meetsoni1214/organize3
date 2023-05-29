@@ -15,7 +15,7 @@ class BankAccountDetailViewModel(
     private val bankAccountRepository: BankAccountRepository
 ): ViewModel() {
     private val bankAccountId: Int = checkNotNull(savedStateHandle["bankAccountId"])
-
+    val isArchived: Int = checkNotNull(savedStateHandle["isArchived"])
     val uiState: StateFlow<BankAccountUiState> = bankAccountRepository.getBankAccountStream(bankAccountId)
         .filterNotNull()
         .map {
@@ -32,26 +32,36 @@ class BankAccountDetailViewModel(
     suspend fun archiveBankAccount() {
         bankAccountRepository.updateBankAccount(uiState.value.copy(isArchived = 1).toBankAccount())
     }
+    suspend fun deleteBankAccount(bankAccount: BankAccount) {
+        bankAccountRepository.deleteBankAccount(bankAccount)
+    }
+    suspend fun unArchiveBankAccount() {
+        bankAccountRepository.updateBankAccount(uiState.value.copy(isArchived = 0).toBankAccount())
+    }
     suspend fun duplicateBankAccount() {
         bankAccountRepository.insertBankAccount(
-            BankAccount(bankName = "copy of ${uiState.value.bankName}", bankLogo = uiState.value.bankLogo, accountHolderName = uiState.value.accountHolderName,
-            accountNumber = uiState.value.accountNumber,
-            accountType = uiState.value.accountType,
-            remarks = uiState.value.remarks,
-            ifscCode = uiState.value.ifscCode,
-            regMobNo = uiState.value.regMobNo,
-            regEmail = uiState.value.regEmail,
-            haveCard = uiState.value.haveCard,
-            nameOnCard = uiState.value.nameOnCard,
-            expiryDate = uiState.value.expiryDate,
-            cardCvv = uiState.value.cardCvv,
-            cardNo = uiState.value.cardNo,
-            cardPin = uiState.value.cardPin,
-            haveUpi = uiState.value.haveUpi,
-            upiPin = uiState.value.upiPin,
-            haveBankingApp = uiState.value.haveBankingApp,
-            loginPin = uiState.value.loginPin,
-            transactionPin = uiState.value.transactionPin
+            BankAccount(
+                bankName = "copy of ${uiState.value.bankName}",
+                bankLogo = uiState.value.bankLogo,
+                accountHolderName = uiState.value.accountHolderName,
+                accountNumber = uiState.value.accountNumber,
+                accountType = uiState.value.accountType,
+                remarks = uiState.value.remarks,
+                ifscCode = uiState.value.ifscCode,
+                regMobNo = uiState.value.regMobNo,
+                regEmail = uiState.value.regEmail,
+                haveCard = uiState.value.haveCard,
+                isArchived = uiState.value.isArchived,
+                nameOnCard = uiState.value.nameOnCard,
+                expiryDate = uiState.value.expiryDate,
+                cardCvv = uiState.value.cardCvv,
+                cardNo = uiState.value.cardNo,
+                cardPin = uiState.value.cardPin,
+                haveUpi = uiState.value.haveUpi,
+                upiPin = uiState.value.upiPin,
+                haveBankingApp = uiState.value.haveBankingApp,
+                loginPin = uiState.value.loginPin,
+                transactionPin = uiState.value.transactionPin,
             )
         )
     }

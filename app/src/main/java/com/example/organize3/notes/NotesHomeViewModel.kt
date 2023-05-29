@@ -40,15 +40,9 @@ class NotesHomeViewModel (
     suspend fun undoArchiveNote(note: Note) {
         noteRepository.updateNote(note.copy(isArchived = 0))
     }
-    suspend fun deleteFolder() {
-//        noteRepository.deleteFolder(folder)
-//        noteRepository.deleteNotes(folderId)
-    }
-    suspend fun duplicateFolder() {
-//        val fId: Int = noteRepository.insertFolder(Folder(folderName = "copy of $folderName")).toInt()
-//        for (note in noteHomeUiState.value.notesList) {
-//            noteRepository.insertNote(note.copy(folderId = fId))
-//        }
+    suspend fun deleteFolder(folderId: Int) {
+        noteRepository.deleteFolderWithId(folderId)
+        noteRepository.deleteNotes(folderId)
     }
 }
 

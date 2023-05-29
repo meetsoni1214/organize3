@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
 
 package com.example.organize3
 
@@ -70,9 +70,10 @@ fun OrganizeTopAppBar(
     isUpiPin:(Boolean) -> Unit = {},
     isLoginPin:(Boolean) -> Unit = {},
     isTransactionPin:(Boolean) -> Unit = {},
-    onNavigaationIconClick: () -> Unit = {},
+    onNavigationIconClick: () -> Unit = {},
     deleteEmail: () -> Unit = {},
     duplicateEmail: () -> Unit = {},
+    archive: () -> Unit = {},
     unArchive: () -> Unit = {},
     saveNote:() -> Unit = {},
     navigateUp: () -> Unit = {},
@@ -118,6 +119,14 @@ fun OrganizeTopAppBar(
                             },
                             text = {Text(text = stringResource(id = R.string.duplicate))}
                         )
+                        if (!isArchived) {
+                            DropdownMenuItem(
+                                text = { Text(text = stringResource(id = R.string.archive))},
+                                onClick = {
+                                    archive()
+                                    showExpandedMenu = !showExpandedMenu
+                                })
+                        }
                         DropdownMenuItem(
                             text = { Text(text = stringResource(id = R.string.delete))},
                             onClick = {
@@ -132,18 +141,12 @@ fun OrganizeTopAppBar(
                     }
                 })
             if (deleteConfirmationRequired) {
-                if (isArchived) {
                     DeleteConfirmationDialog(
                         onDeleteConfirm = deleteEmail,
                         onDeleteCancel = { deleteConfirmationRequired = false},
                         actionText = R.string.my_delete,
                         text = R.string.delete_details_confirm
                     )
-                }else {
-                    DeleteConfirmationDialog(
-                        onDeleteConfirm = deleteEmail,
-                        onDeleteCancel = { deleteConfirmationRequired = false })
-                }
             }
             if (showDialog.value) {
                 if (isBankAccount) {
@@ -210,6 +213,14 @@ fun OrganizeTopAppBar(
                         expanded = showExpandedMenu,
                         onDismissRequest = { showExpandedMenu = false}
                     ) {
+                        if (isArchived) {
+                            DropdownMenuItem(
+                                onClick = {
+                                    unArchive()
+                                    showExpandedMenu = !showExpandedMenu
+                                },
+                                text = { Text(text = stringResource(id = R.string.unarchived))})
+                        }
                         DropdownMenuItem(
                             onClick = {
                                 showDialog.value = true
@@ -223,12 +234,20 @@ fun OrganizeTopAppBar(
                             },
                             text = {Text(text = stringResource(id = R.string.duplicate))}
                         )
-                        DropdownMenuItem(
-                            onClick = {
-                                showMoveDialog.value = true
-                                showExpandedMenu = !showExpandedMenu
-                            },
-                            text = { Text(text = stringResource(id = R.string.move_to))})
+                        if (!isArchived) {
+                            DropdownMenuItem(
+                                onClick = {
+                                    showMoveDialog.value = true
+                                    showExpandedMenu = !showExpandedMenu
+                                },
+                                text = { Text(text = stringResource(id = R.string.move_to))})
+                            DropdownMenuItem(
+                                text = { Text(text = stringResource(id = R.string.archive))},
+                                onClick = {
+                                    archive()
+                                    showExpandedMenu = !showExpandedMenu
+                                })
+                        }
                         DropdownMenuItem(
                             text = { Text(text = stringResource(id = R.string.delete))},
                             onClick = {
@@ -247,6 +266,8 @@ fun OrganizeTopAppBar(
             if (deleteConfirmationRequired) {
                 DeleteConfirmationDialog(
                     onDeleteConfirm = deleteEmail,
+                    text = R.string.delete_details_confirm,
+                    actionText = R.string.my_delete,
                     onDeleteCancel = { deleteConfirmationRequired = false })
             }
             if (showDialog.value) {
@@ -290,13 +311,6 @@ fun OrganizeTopAppBar(
                                 deleteConfirmationRequired = true
                                 showExpandedMenu = !showExpandedMenu
                             })
-                        DropdownMenuItem(
-                            onClick = {
-                                duplicateEmail()
-                                showExpandedMenu = !showExpandedMenu
-                            },
-                            text = {Text(text = stringResource(id = R.string.duplicate_fold))}
-                        )
                     }
                 },
                 navigationIcon = {
@@ -307,6 +321,7 @@ fun OrganizeTopAppBar(
             if (deleteConfirmationRequired) {
                 DeleteConfirmationDialog(
                     onDeleteConfirm = deleteEmail,
+                    actionText = R.string.my_delete,
                     text = R.string.delete_folder_confirm,
                     onDeleteCancel = { deleteConfirmationRequired = false })
             }
@@ -327,7 +342,7 @@ fun OrganizeTopAppBar(
             modifier = modifier,
             navigationIcon = {
                 IconButton(
-                    onClick = onNavigaationIconClick,
+                    onClick = onNavigationIconClick,
                 ) {
                     Icon(imageVector = Icons.Default.Menu, contentDescription = null)
                 }

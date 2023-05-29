@@ -24,6 +24,7 @@ import com.example.organize3.AppViewModelProvider
 import com.example.organize3.OrganizeTopAppBar
 import com.example.organize3.R
 import com.example.organize3.appUi.BankAccountUiState
+import com.example.organize3.appUi.toBankAccount
 import com.example.organize3.emailAccounts.OtherDetails
 import com.example.organize3.emailAccounts.TitleRow
 import kotlinx.coroutines.launch
@@ -55,6 +56,7 @@ fun BankAccountDetailScreen(
     var isTransactionPin  by rememberSaveable {mutableStateOf(false)}
     var isCancelClick by rememberSaveable {mutableStateOf(false)}
     val selectedDetails = ArrayList<String>()
+    val isArchived = viewModel.isArchived
     if (isBankName) {
         selectedDetails.add("${stringResource(id = R.string.bank_name)}: ${uiState.value.bankName}\n")
     }
@@ -138,6 +140,7 @@ fun BankAccountDetailScreen(
                 navigateUp = navigateBack,
                 shareSubject = stringResource(id = R.string.bank_account_details),
                 shareText = shareText.toString(),
+                isArchived = (isArchived == 1),
                 isBankName = {isBankName = it},
                 isAccountHolderName = {isAccountHolderName = it},
                 isAccountType = {isAccountType = it},
@@ -155,11 +158,23 @@ fun BankAccountDetailScreen(
                 isLoginPin = {isLoginPin = it},
                 isTransactionPin = {isTransactionPin = it},
                 onCancelClick = {isCancelClick = it},
+                unArchive = {
+                            coroutineScope.launch {
+                                viewModel.unArchiveBankAccount()
+                                navigateBack()
+                            }
+                },
                 deleteEmail = {
                     coroutineScope.launch {
-                        viewModel.archiveBankAccount()
+                        viewModel.deleteBankAccount(uiState.value.toBankAccount())
                         navigateBack()
                     }
+                },
+                archive = {
+                          coroutineScope.launch {
+                              viewModel.archiveBankAccount()
+                              navigateBack()
+                          }
                 },
                 duplicateEmail = {
                     coroutineScope.launch {

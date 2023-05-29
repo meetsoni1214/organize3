@@ -72,6 +72,7 @@
     <string name="archived_details">Archived Details</string>
     <string name="archived">Archived</string>
     <string name="unarchived">Unarchive</string>
+    <string name="archive">Archive</string>
     <string name="archive_confirm_email">On deleting the details it will moved to Archived.</string>
     <string name="delete_folder_confirm">Are you sure you want to delete the Folder?</string>
     <string name="delete_details_confirm">Are you sure you want to delete the details? It will be deleted permanently.</string>

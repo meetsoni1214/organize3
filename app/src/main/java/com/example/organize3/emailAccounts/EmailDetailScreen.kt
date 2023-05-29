@@ -66,17 +66,16 @@ fun EmailDetailScreen(
                                 }
                     },
                     deleteEmail = {
-                        if (isArchived == 1) {
                             coroutineScope.launch {
                                 viewModel.deleteEmail(uiState.value.toEmailAccount())
                                 navigateBack()
                             }
-                        }else {
-                            coroutineScope.launch {
-                                viewModel.archiveEmail()
-                                navigateBack()
-                                showSnackbar = true
-                            }
+                    },
+                    archive = {
+                        coroutineScope.launch {
+                            viewModel.archiveEmail()
+                            navigateBack()
+                            showSnackbar = true
                         }
                     },
                     duplicateEmail = {
@@ -86,7 +85,6 @@ fun EmailDetailScreen(
                         }
                     }
                 )
-
         },
         floatingActionButton = {
             FloatingActionButton(

@@ -27,6 +27,7 @@ import com.example.organize3.applications.AddedApplicationScreen
 import com.example.organize3.applications.ApplicationDetailScreen
 import com.example.organize3.applications.ApplicationEditScreen
 import com.example.organize3.archived.ArchivedScreen
+import com.example.organize3.archived.CardType
 import com.example.organize3.bankAccounts.*
 import com.example.organize3.emailAccounts.AddEmailAccountScreen
 import com.example.organize3.emailAccounts.AddedEmailAccountsScreen
@@ -153,8 +154,8 @@ class MainActivity : ComponentActivity() {
                             AddedBankAccountScreen(
                                 onAddAccount = {navController.navigateTo(OrganizeDestination.AddBankAccountScreen.route)},
                                 onNavigateUp = {navController.navigateUp()},
-                                goToBankAccountScreen = {id ->
-                                    navController.navigateTo(OrganizeDestination.BankAccountDetailsScreen.withArgs(id))
+                                goToBankAccountScreen = {id, isArchived->
+                                    navController.navigateTo("${OrganizeDestination.BankAccountDetailsScreen.route}/${id}/${isArchived}")
                                 }
                             )
                         }
@@ -162,8 +163,8 @@ class MainActivity : ComponentActivity() {
                             AddedApplicationScreen(
                                 onNavigateUp = {navController.navigateUp()},
                                 onAddApplication = {navController.navigateTo(OrganizeDestination.AddApplicationAccountScreen.route)},
-                                navigateToApplicationAccount = { id ->
-                                    navController.navigateTo(OrganizeDestination.ApplicationAccountDetailScreen.withArgs(id))
+                                navigateToApplicationAccount = { id, isArchived ->
+                                    navController.navigateTo("${OrganizeDestination.ApplicationAccountDetailScreen.route}/${id}/${isArchived}")
                                 }
                             )
                         }
@@ -229,9 +230,13 @@ class MainActivity : ComponentActivity() {
                                 navigateBack = { navController.popBackStack() })
                         }
                         composable(
-                            route = OrganizeDestination.ApplicationAccountDetailScreen.route + "/{applicationId}",
+                            route = OrganizeDestination.ApplicationAccountDetailScreen.route + "/{applicationId}" + "/{isArchived}",
                             arguments = listOf(
                                 navArgument("applicationId") {
+                                    type = NavType.IntType
+                                    defaultValue = 0
+                                },
+                                navArgument("isArchived") {
                                     type = NavType.IntType
                                     defaultValue = 0
                                 }
@@ -275,9 +280,13 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable(
-                            route = OrganizeDestination.BankAccountDetailsScreen.route + "/{bankAccountId}",
+                            route = OrganizeDestination.BankAccountDetailsScreen.route + "/{bankAccountId}" + "/{isArchived}",
                             arguments = listOf(
                                 navArgument("bankAccountId") {
+                                    type = NavType.IntType
+                                    defaultValue = 0
+                                },
+                                navArgument("isArchived") {
                                     type = NavType.IntType
                                     defaultValue = 0
                                 }
@@ -303,23 +312,27 @@ class MainActivity : ComponentActivity() {
                         ) {
                             NotesHome(
                                 onNavigateUp = { navController.navigateUp() },
-                                navigateToNote = { folderId, id ->
-                                    navController.navigateTo("${OrganizeDestination.AddNote.route}/${folderId}/${id}")
+                                navigateToNote = { folderId, id, isArchived ->
+                                    navController.navigateTo("${OrganizeDestination.AddNote.route}/${folderId}/${id}/${isArchived}")
                                 },
-                                onAddNote = {folderId, noteId->
-                                    navController.navigateTo("${OrganizeDestination.AddNote.route}/${folderId}/${noteId}")
+                                onAddNote = {folderId, noteId, isArchived->
+                                    navController.navigateTo("${OrganizeDestination.AddNote.route}/${folderId}/${noteId}/${isArchived}")
                                 },
                                 navigateBack = {navController.popBackStack()}
                             )
                         }
                         composable(
-                            route = OrganizeDestination.AddNote.route + "/{folderId}" + "/{noteId}",
+                            route = OrganizeDestination.AddNote.route + "/{folderId}" + "/{noteId}" + "/{isArchived}",
                             arguments = listOf(
                                 navArgument("folderId") {
                                     type = NavType.IntType
                                     defaultValue = 0
                                 },
                                 navArgument("noteId") {
+                                    type = NavType.IntType
+                                    defaultValue = 0
+                                },
+                                navArgument("isArchived") {
                                     type = NavType.IntType
                                     defaultValue = 0
                                 }
@@ -352,8 +365,13 @@ class MainActivity : ComponentActivity() {
                         ) {
                             ArchivedScreen(onNavigateUp = {
                                 navController.navigateUp() },
-                                onCardClick = {id, isArchived ->
-                                    navController.navigateTo("${OrganizeDestination.EmailAccountDetailScreen.route}/${id}/${isArchived}")
+                                onCardClick = {folderId, id, isArchived, cardType ->
+                                    when (cardType) {
+                                        CardType.EmailAccountCard -> navController.navigateTo("${OrganizeDestination.EmailAccountDetailScreen.route}/${id}/${isArchived}")
+                                        CardType.ApplicationAccountCard -> navController.navigateTo("${OrganizeDestination.ApplicationAccountDetailScreen.route}/${id}/${isArchived}")
+                                        CardType.BankAccountCard -> navController.navigateTo("${OrganizeDestination.BankAccountDetailsScreen.route}/${id}/${isArchived}")
+                                        else -> navController.navigateTo("${OrganizeDestination.AddNote.route}/${folderId}/${id}/${isArchived}")
+                                    }
                                 }
                             )
                         }

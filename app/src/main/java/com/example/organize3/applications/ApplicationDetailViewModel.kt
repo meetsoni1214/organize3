@@ -16,6 +16,7 @@ class ApplicationDetailViewModel(
 ): ViewModel() {
 
     private val applicationId: Int = checkNotNull(savedStateHandle["applicationId"])
+    val isArchived: Int = checkNotNull(savedStateHandle["isArchived"])
 
     val uiState: StateFlow<ApplicationUiState> = applicationRepository.getApplicationStream(applicationId)
         .filterNotNull()
@@ -34,9 +35,15 @@ class ApplicationDetailViewModel(
     suspend fun archiveApplication() {
         applicationRepository.updateApplication(uiState.value.copy(isArchived = 1).toApplicationAccount())
     }
+    suspend fun deleteApplication(applicationAccount: ApplicationAccount) {
+        applicationRepository.deleteApplication(applicationAccount)
+    }
+    suspend fun unArchiveApplication() {
+        applicationRepository.updateApplication(uiState.value.copy(isArchived = 0).toApplicationAccount())
+    }
     suspend fun duplicateApplication() {
 //        val title = uiState.value.title
 //        val newCopy = uiState.value.copy(title = "copy of $title")
-        applicationRepository.insertApplication(ApplicationAccount(accountTitle = "copy of ${uiState.value.title}", accountUsername = uiState.value.username, accountPassword = uiState.value.password, accountRemarks = uiState.value.remarks))
+        applicationRepository.insertApplication(ApplicationAccount(accountTitle = "copy of ${uiState.value.title}", accountUsername = uiState.value.username, accountPassword = uiState.value.password, accountRemarks = uiState.value.remarks, isArchived = uiState.value.isArchived))
     }
 }

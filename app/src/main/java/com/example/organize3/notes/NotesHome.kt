@@ -51,19 +51,20 @@ fun NotesHome(
     modifier: Modifier = Modifier,
     onNavigateUp:() -> Unit,
     navigateBack:() -> Unit,
-    navigateToNote:(Int, Int) -> Unit,
-    onAddNote:(Int, Int) -> Unit,
+    navigateToNote:(Int, Int, Int) -> Unit,
+    onAddNote:(Int, Int, Int) -> Unit,
     viewModel: NotesHomeViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val notesHomeUiState by viewModel.noteHomeUiState.collectAsState()
 //    val folderUiState by viewModel.folder.collectAsState()
     val coroutineScope = rememberCoroutineScope()
+    val folderId = viewModel.folderId
     val scaffoldState = rememberScaffoldState()
     var longPressClick by rememberSaveable { mutableStateOf(false) }
 
     Scaffold (
         floatingActionButton = {
-            FloatingActionButton(onClick = {onAddNote(viewModel.folderId, -1)}) {
+            FloatingActionButton(onClick = {onAddNote(viewModel.folderId, -1, 0)}) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = null)
             }
         },
@@ -74,14 +75,8 @@ fun NotesHome(
                 showFolderMenu = true,
                 deleteEmail = {
                               coroutineScope.launch {
-                                  viewModel.deleteFolder()
+                                  viewModel.deleteFolder(folderId)
                               }
-                    navigateBack()
-                },
-                duplicateEmail = {
-                    coroutineScope.launch {
-                        viewModel.duplicateFolder()
-                    }
                     navigateBack()
                 },
                 canNavigateBack = true,
@@ -105,7 +100,7 @@ fun NotesHome(
                 }
                 coroutineScope.launch {
                     val snackBarResult = scaffoldState.snackbarHostState.showSnackbar(
-                        message = "Item deleted1",
+                        message = "Item moved to archive!",
                         actionLabel = "Undo"
                     )
                     when (snackBarResult) {
@@ -123,7 +118,7 @@ fun NotesHome(
 fun NotesScreen(
     modifier: Modifier = Modifier,
     notesList: List<Note>,
-    onNoteClick: (Int, Int) -> Unit,
+    onNoteClick: (Int, Int, Int) -> Unit,
     folderId: Int,
     onLongClick: (Boolean) -> Unit,
     deleteNote: (Note) -> Unit
@@ -144,7 +139,7 @@ fun NotesScreen(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            NotesList(onNoteClick = { onNoteClick(folderId, it.id) }, deleteNote = deleteNote, notesList = notesList, onLongClick = onLongClick)
+            NotesList(onNoteClick = { onNoteClick(folderId, it.id, 0) }, deleteNote = deleteNote, notesList = notesList, onLongClick = onLongClick)
         }
     }
 }
@@ -182,11 +177,11 @@ fun NotesList(
                     val color by animateColorAsState(
                         when (dismissState.targetValue) {
                             DismissValue.Default -> Color.White
-                            else -> Color.Red
+                            else -> Color.Green
                         }
                     )
                     val alignment = Alignment.CenterEnd
-                    val icon = Icons.Default.Delete
+                    val icon = R.drawable.ic_archived
                     val scale by animateFloatAsState(
                         if (dismissState.targetValue == DismissValue.Default) 0.75f else 1f
                     )
@@ -198,9 +193,8 @@ fun NotesList(
                         ,
                         contentAlignment = alignment
                     ){
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = "Delete Icon",
+                        Image(painter = painterResource(id = icon),
+                            contentDescription = "Archive Icon",
                             modifier = Modifier.scale(scale)
                         )
                     }

@@ -10,6 +10,7 @@ import com.example.organize3.data.email.EmailAccount
 import com.example.organize3.data.email.EmailRepository
 import com.example.organize3.data.folderWithNotes.FolderWithNotesRepository
 import com.example.organize3.data.folderWithNotes.Note
+import com.example.organize3.model.Bank
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -22,21 +23,45 @@ class ArchivedHomeViewModel(
     private val notesRepository: FolderWithNotesRepository
 ): ViewModel(){
 
-    val archivedHomeUiState: StateFlow<ArchivedHomeUiState> = emailRepository.getArchivedEmailsStream().map { ArchivedHomeUiState(it) }
+    val emailArchivedState: StateFlow<EmailArchivedHomeUiState> = emailRepository.getArchivedEmailsStream().map { EmailArchivedHomeUiState(it) }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
-            initialValue = ArchivedHomeUiState()
+            initialValue = EmailArchivedHomeUiState()
         )
-
-
+    val applicationArchivedState: StateFlow<ApplicationArchivedHomeUiState> = applicationRepository.getArchivedApplicationsStream().map { ApplicationArchivedHomeUiState(it)}
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
+            initialValue = ApplicationArchivedHomeUiState()
+        )
+    val bankAccountArchivedState: StateFlow<BankAccountArchivedHomeUiState> = bankAccountRepository.getArchivedBankAccountsStream().map { BankAccountArchivedHomeUiState(it) }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
+            initialValue = BankAccountArchivedHomeUiState()
+        )
+    val noteArchivedState: StateFlow<NoteArchivedHomeUiState> = notesRepository.getArchivedNotes().map { NoteArchivedHomeUiState(it) }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
+            initialValue = NoteArchivedHomeUiState()
+        )
     companion object {
         private const val TIMEOUT_MILLIS = 5_000L
     }
 }
-data class ArchivedHomeUiState(
+data class EmailArchivedHomeUiState(
     val emailList: List<EmailAccount> = listOf(),
-    val applicationList: List<ApplicationAccount> = listOf(),
     val bankAccountList: List<BankAccount> = listOf(),
+    val notesList: List<Note> = listOf()
+)
+data class ApplicationArchivedHomeUiState(
+    val applicationList: List<ApplicationAccount> = listOf()
+)
+data class BankAccountArchivedHomeUiState(
+    val bankAccountList: List<BankAccount> = listOf()
+)
+data class NoteArchivedHomeUiState(
     val notesList: List<Note> = listOf()
 )

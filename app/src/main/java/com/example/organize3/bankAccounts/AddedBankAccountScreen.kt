@@ -54,7 +54,7 @@ fun AddedBankAccountScreen(
     canNavigateBack: Boolean = true,
     onNavigateUp:() -> Unit,
     onAddAccount: () -> Unit,
-    goToBankAccountScreen: (Int) -> Unit,
+    goToBankAccountScreen: (Int, Int) -> Unit,
     viewModel: BankAccountHomeViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val bankAccountHomeUiState by viewModel.bankAccountHomeUiState.collectAsState()
@@ -103,7 +103,7 @@ fun AddedBankAccountScreen(
 @Composable
 fun BankAccountScreen(
     modifier: Modifier = Modifier,
-    goToBankAccountScreen: (Int) -> Unit,
+    goToBankAccountScreen: (Int, Int) -> Unit,
     deleteAccount: (BankAccount) -> Unit,
     bankAccountList: List<BankAccount>
 ) {
@@ -130,10 +130,11 @@ fun BankAccountScreen(
 
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun BankAccountList(
     modifier: Modifier = Modifier,
-    goToBankAccountScreen: (Int) -> Unit,
+    goToBankAccountScreen: (Int, Int) -> Unit,
     deleteAccount: (BankAccount) -> Unit,
     bankAccountList: List<BankAccount>
 ) {
@@ -159,11 +160,11 @@ fun BankAccountList(
                     val color by animateColorAsState(
                         when (dismissState.targetValue) {
                             DismissValue.Default -> Color.White
-                            else -> Color.Red
+                            else -> Color.Green
                         }
                     )
                     val alignment = Alignment.CenterEnd
-                    val icon = Icons.Default.Delete
+                    val icon =  R.drawable.ic_archived
 
                     val scale by animateFloatAsState(
                         if (dismissState.targetValue == DismissValue.Default) 0.75f else 1f
@@ -176,9 +177,9 @@ fun BankAccountList(
                                 ,
                         contentAlignment = alignment
                     ) {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = "Delete Icon",
+                        Image(
+                            painter = painterResource(id = icon),
+                            contentDescription = "Archive Icon",
                             modifier = Modifier.scale(scale)
                         )
                     }
@@ -206,12 +207,12 @@ fun BankAccountList(
 @Composable
 fun BankAccountCard(
     modifier: Modifier = Modifier,
-    goToBankAccountScreen: (Int) -> Unit,
+    goToBankAccountScreen: (Int, Int) -> Unit,
     bankAccount: BankAccount
 ) {
     Card(modifier = modifier
         .fillMaxWidth()
-        .clickable { goToBankAccountScreen(bankAccount.id) }
+        .clickable { goToBankAccountScreen(bankAccount.id, 0) }
         .padding(4.dp)) {
         Row(
             modifier = Modifier
