@@ -86,6 +86,8 @@
     <string name="share_application_detail">%1$s \n Login-Id/Username:- %2$s \n Password:- %3$s \n\n Remarks:- %4$s</string>
     <string name="email_account_deleted">Email Account Details has been deleted</string>
     <string name="application_account_deleted">Application Account Details has been deleted</string>
+    <string name="no_search_result_found">Sorry No results Found</string>
+    <string name="search_application_account">Search Application Accounts</string>
     <string name="bank_account">Bank Accounts</string>
     <string name="ambarnath_bank">"AMBARNATH JAI-HIND CO-OP.BANK LTD"</string>
     <string name="au_small_bank">"AU Small Finance Bank"</string>
@@ -140,6 +142,9 @@
     <string name="twitter_remarks">Personal Twitter Account</string>
     <string name= "appLogo">App Logo</string>
     <string name="bank_logo">Bank\'s Logo</string>
+    <string name="hint_email_search">Search Email Accounts</string>
+    <string name="hint_bankAccount_search">Search Bank Accounts</string>
+    <string name="hint_search_notes">Search Notes</string>
     <string name="application_account_details">Enter Details</string>
     <string name="login">Let\'s Start with Login</string>
     <string name="register">Let\'s Start with Register</string>

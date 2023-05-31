@@ -13,27 +13,24 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.DismissDirection
 import androidx.compose.material.SnackbarResult
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.material3.Card
-import androidx.compose.material3.DismissValue
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -45,6 +42,7 @@ import com.example.organize3.AppViewModelProvider
 import com.example.organize3.OrganizeTopAppBar
 import com.example.organize3.R
 import com.example.organize3.data.application.ApplicationAccount
+import com.example.organize3.emailAccounts.SearchField
 import kotlinx.coroutines.launch
 
 
@@ -61,6 +59,9 @@ fun AddedApplicationScreen(
     val anotherUiState by viewModel.anotherUiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     val scaffoldState = rememberScaffoldState()
+    val applicationAccounts by viewModel.applicationAccounts.collectAsState()
+    val searchQuery by viewModel.searchText.collectAsState()
+    val isSearching by viewModel.isSearching.collectAsState()
     val isSocials = anotherUiState.isSocials
 //    if (isSocials) {
 //        viewModel.addAllSocials()
@@ -100,7 +101,7 @@ fun AddedApplicationScreen(
     }){ values ->
         ApplicationScreen(
             Modifier.padding(values),
-            applicationList = applicationUiState.applicationList,
+            applicationList = applicationAccounts,
             onApplicationClick = navigateToApplicationAccount,
             onShowSnackbar = {
 //                    applicationAccount ->
@@ -126,7 +127,11 @@ fun AddedApplicationScreen(
                         }
                     }
                 }
-            }
+            },
+            realApplicationList = applicationUiState.applicationList,
+            isSearching = isSearching,
+            searchQuery = searchQuery,
+            onValueChanged = viewModel::onSearchTextChange
 //            isSocials =  {
 //                if (isSocials) {
 //                    coroutineScope.launch {
@@ -143,27 +148,26 @@ fun AddedApplicationScreen(
 fun ApplicationScreen(
     modifier: Modifier = Modifier,
     applicationList: List<ApplicationAccount>,
+    realApplicationList: List<ApplicationAccount>,
+    isSearching: Boolean,
+    searchQuery: String,
+    onValueChanged: (String) -> Unit,
     onApplicationClick: (Int, Int) -> Unit,
     deleteApplication: (ApplicationAccount) -> Unit,
     onShowSnackbar: (ApplicationAccount) -> Unit
 //    isSocials: () -> Unit = {}
 ) {
 
-//    isSocials()
-    if (applicationList.isEmpty()) {
-        Box(modifier = modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(text = stringResource(id = R.string.category_screen_text_application),
-                modifier = Modifier.padding(horizontal = 16.dp))
-        }
-    }else {
-        Column(modifier = modifier
-            .fillMaxWidth()
-            .padding(16.dp)) {
-            ApplicationList(applicationList = applicationList, onApplicationClick = onApplicationClick, deleteApplication = deleteApplication, onShowSnackbar = onShowSnackbar)
-        }
-    }
+            ApplicationList(
+                applicationList = applicationList,
+                onApplicationClick = onApplicationClick,
+                deleteApplication = deleteApplication,
+                isSearching = isSearching,
+                searchQuery = searchQuery,
+                onValueChanged = onValueChanged,
+                realApplicationList = realApplicationList,
+                onShowSnackbar = onShowSnackbar)
+
 }
 
 @Composable
@@ -172,68 +176,109 @@ fun ApplicationList(
     applicationList: List<ApplicationAccount>,
     onApplicationClick: (Int, Int) -> Unit,
     deleteApplication: (ApplicationAccount) -> Unit,
-    onShowSnackbar: (ApplicationAccount) -> Unit
+    onShowSnackbar: (ApplicationAccount) -> Unit,
+    searchQuery: String,
+    onValueChanged: (String) -> Unit,
+    realApplicationList: List<ApplicationAccount>,
+    isSearching: Boolean
 ) {
-    LazyColumn(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        items(items = applicationList, key = {it.id}) {application ->
-            val dismissState = rememberDismissState()
-
-            if (dismissState.isDismissed(DismissDirection.EndToStart)) {
-                deleteApplication(application)
-            }
-
-            SwipeToDismiss(
-                state = dismissState,
-                modifier = Modifier
-                    .padding(vertical = Dp(1f)),
-                directions = setOf(
-                    DismissDirection.EndToStart
-                ),
-                dismissThresholds = { direction ->
-                    androidx.compose.material.FractionalThreshold(if (direction == DismissDirection.EndToStart) 0.3f else 0.05f)
+    var isHintDisplayed by remember {
+        mutableStateOf(true)
+    }
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        SearchField(
+            value = searchQuery,
+            onValueChanged = onValueChanged,
+            isHintDisplayed = isHintDisplayed,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(100))
+                .background(Color.LightGray)
+                .onFocusChanged {
+                    isHintDisplayed = !(it.hasFocus)
                 },
-                background = {
-                    val color by animateColorAsState(
-                        when (dismissState.targetValue) {
-                            androidx.compose.material.DismissValue.Default -> Color.White
-                            else -> Color.Green
+            hintText = stringResource(id = R.string.search_application_account))
+        Spacer(modifier = Modifier.height(16.dp))
+        if (applicationList.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                if (realApplicationList.isEmpty()) {
+                    Text(text = stringResource(id = R.string.category_screen_text_application),
+                        modifier = Modifier.padding(horizontal = 16.dp))
+                }else {
+                    Text(text = stringResource(id = R.string.no_search_result_found),
+                        modifier = Modifier.padding(horizontal = 16.dp))
+                }
+            }
+        } else {
+            LazyColumn(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(items = applicationList, key = {it.id}) {application ->
+                    val dismissState = rememberDismissState()
+
+                    if (dismissState.isDismissed(DismissDirection.EndToStart)) {
+                        deleteApplication(application)
+                    }
+
+                    SwipeToDismiss(
+                        state = dismissState,
+                        modifier = Modifier
+                            .padding(vertical = Dp(1f)),
+                        directions = setOf(
+                            DismissDirection.EndToStart
+                        ),
+                        dismissThresholds = { direction ->
+                            androidx.compose.material.FractionalThreshold(if (direction == DismissDirection.EndToStart) 0.3f else 0.05f)
+                        },
+                        background = {
+                            val color by animateColorAsState(
+                                when (dismissState.targetValue) {
+                                    androidx.compose.material.DismissValue.Default -> Color.White
+                                    else -> Color.Green
+                                }
+                            )
+                            val alignment = Alignment.CenterEnd
+                            val icon = R.drawable.ic_archived
+
+                            val scale by animateFloatAsState(
+                                if (dismissState.targetValue == androidx.compose.material.DismissValue.Default) 0.75f else 1f
+                            )
+                            Box (
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(color)
+                                    .padding(horizontal = Dp(20f))
+                                ,
+                                contentAlignment = alignment
+                            ){
+                                Image(
+                                    painter = painterResource(id = icon),
+                                    contentDescription = "Archive Icon",
+                                    modifier = Modifier.scale(scale)
+                                )
+                            }
+                        },
+                        dismissContent = {
+                            Card(
+                                elevation = animateDpAsState(
+                                    if (dismissState.dismissDirection != null) 4.dp else 0.dp
+                                ).value,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .align(alignment = Alignment.CenterVertically)
+                            ) {
+                                ApplicationCard(application = application, onApplicationClick = onApplicationClick)
+                            }
                         }
                     )
-                    val alignment = Alignment.CenterEnd
-                    val icon = R.drawable.ic_archived
 
-                    val scale by animateFloatAsState(
-                        if (dismissState.targetValue == androidx.compose.material.DismissValue.Default) 0.75f else 1f
-                    )
-                    Box (
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(color)
-                            .padding(horizontal = Dp(20f))
-                        ,
-                        contentAlignment = alignment
-                            ){
-                        Image(
-                            painter = painterResource(id = icon),
-                            contentDescription = "Archive Icon",
-                            modifier = Modifier.scale(scale)
-                        )
-                    }
-                },
-                dismissContent = {
-                    Card(
-                        elevation = animateDpAsState(
-                            if (dismissState.dismissDirection != null) 4.dp else 0.dp
-                        ).value,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(alignment = Alignment.CenterVertically)
-                    ) {
-                        ApplicationCard(application = application, onApplicationClick = onApplicationClick)
-                    }
                 }
-            )
-
+            }
         }
     }
 }

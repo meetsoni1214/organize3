@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.example.organize3.Searchable
 
 @Entity(tableName = "notes")
 data class Note(
@@ -13,4 +14,8 @@ data class Note(
     @ColumnInfo(name = "content") val noteContent: String,
     @ColumnInfo(name = "uris") val imageUris: List<String>,
     @ColumnInfo(name = "isArchived") val isArchived: Int = 0
-)
+): Searchable {
+    override fun doesMatchSearchQuery(query: String): Boolean {
+        return noteTitle.contains(query.trim(), ignoreCase = true) || noteContent.contains(query.trim(), ignoreCase = true)
+    }
+}

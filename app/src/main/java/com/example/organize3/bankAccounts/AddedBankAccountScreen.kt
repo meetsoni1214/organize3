@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.DismissDirection
 import androidx.compose.material.DismissValue
@@ -26,14 +27,12 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -46,6 +45,7 @@ import com.example.organize3.AppViewModelProvider
 import com.example.organize3.OrganizeTopAppBar
 import com.example.organize3.R
 import com.example.organize3.data.bankAccount.BankAccount
+import com.example.organize3.emailAccounts.SearchField
 import kotlinx.coroutines.launch
 
 @Composable
@@ -60,6 +60,9 @@ fun AddedBankAccountScreen(
     val bankAccountHomeUiState by viewModel.bankAccountHomeUiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     val scaffoldState = rememberScaffoldState()
+    val bankAccounts by viewModel.bankAccounts.collectAsState()
+    val isSearching by viewModel.isSearching.collectAsState()
+    val searchQuery by viewModel.searchText.collectAsState()
     Scaffold(
         scaffoldState = scaffoldState,
         floatingActionButton = {
@@ -78,7 +81,7 @@ fun AddedBankAccountScreen(
         BankAccountScreen(
             modifier.padding(values),
             goToBankAccountScreen = goToBankAccountScreen,
-            bankAccountList = bankAccountHomeUiState.bankAccounts,
+            bankAccountList = bankAccounts,
             deleteAccount = {bankAccount ->
                 coroutineScope.launch {
                     viewModel.archiveBankAccount(bankAccount)
@@ -95,7 +98,11 @@ fun AddedBankAccountScreen(
                         }
                     }
                 }
-            }
+            },
+            isSearching = isSearching,
+            searchQuery = searchQuery,
+            realBankAccountsLists = bankAccountHomeUiState.bankAccounts,
+            onValueChange = viewModel::onSearchTextChange
         )
     }
 }
@@ -103,32 +110,24 @@ fun AddedBankAccountScreen(
 @Composable
 fun BankAccountScreen(
     modifier: Modifier = Modifier,
+    isSearching: Boolean,
+    searchQuery: String,
+    onValueChange: (String) -> Unit,
+    realBankAccountsLists: List<BankAccount>,
     goToBankAccountScreen: (Int, Int) -> Unit,
     deleteAccount: (BankAccount) -> Unit,
     bankAccountList: List<BankAccount>
 ) {
-    if (bankAccountList.isEmpty()) {
-        Box(modifier = modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = stringResource(id = R.string.category_screen_text_bank),
-                modifier = Modifier.padding(horizontal = 16.dp))
-        }
-    }else {
-        Column(modifier = modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-        ) {
             BankAccountList(
                 bankAccountList = bankAccountList,
                 goToBankAccountScreen = goToBankAccountScreen,
-                deleteAccount = deleteAccount
+                deleteAccount = deleteAccount,
+                isSearching = isSearching,
+                searchQuery = searchQuery,
+                onValueChange = onValueChange,
+                realBankAccountsLists = realBankAccountsLists
             )
         }
-    }
-
-}
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -136,70 +135,112 @@ fun BankAccountList(
     modifier: Modifier = Modifier,
     goToBankAccountScreen: (Int, Int) -> Unit,
     deleteAccount: (BankAccount) -> Unit,
+    isSearching: Boolean,
+    searchQuery: String,
+    onValueChange: (String) -> Unit,
+    realBankAccountsLists: List<BankAccount>,
     bankAccountList: List<BankAccount>
 ) {
-    LazyColumn(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        items(items = bankAccountList, key = {it.id}) {bankAccount ->
-            val dismissState = rememberDismissState()
-
-            if (dismissState.isDismissed(DismissDirection.EndToStart)) {
-                deleteAccount(bankAccount)
+    var isHintDisplayed by remember {
+        mutableStateOf(true)
+    }
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        SearchField(
+            value = searchQuery,
+            isHintDisplayed = isHintDisplayed,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(100))
+                .background(Color.LightGray)
+                .onFocusChanged {
+                    isHintDisplayed = it.hasFocus
+                }
+            ,
+            hintText = stringResource(id = R.string.hint_bankAccount_search),
+            onValueChanged = onValueChange)
+        Spacer(modifier = Modifier.height(16.dp))
+        if (bankAccountList.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                if (realBankAccountsLists.isEmpty()) {
+                    Text(text = stringResource(id = R.string.category_screen_text_bank),
+                        modifier = Modifier.padding(horizontal = 16.dp))
+                }else {
+                    Text(text = stringResource(id = R.string.no_search_result_found),
+                        modifier = Modifier.padding(horizontal = 16.dp))
+                }
             }
+        }else {
+            LazyColumn(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(items = bankAccountList, key = {it.id}) {bankAccount ->
+                    val dismissState = rememberDismissState()
 
-            SwipeToDismiss(
-                state = dismissState,
-                modifier = Modifier
-                    .padding(vertical = Dp(1f)),
-                directions = setOf(
-                    DismissDirection.EndToStart
-                ),
-                dismissThresholds = {direction ->
-                    androidx.compose.material.FractionalThreshold(if (direction == DismissDirection.EndToStart) 0.3f else 0.05f)
-                },
-                background = {
-                    val color by animateColorAsState(
-                        when (dismissState.targetValue) {
-                            DismissValue.Default -> Color.White
-                            else -> Color.Green
+                    if (dismissState.isDismissed(DismissDirection.EndToStart)) {
+                        deleteAccount(bankAccount)
+                    }
+
+                    SwipeToDismiss(
+                        state = dismissState,
+                        modifier = Modifier
+                            .padding(vertical = Dp(1f)),
+                        directions = setOf(
+                            DismissDirection.EndToStart
+                        ),
+                        dismissThresholds = {direction ->
+                            androidx.compose.material.FractionalThreshold(if (direction == DismissDirection.EndToStart) 0.3f else 0.05f)
+                        },
+                        background = {
+                            val color by animateColorAsState(
+                                when (dismissState.targetValue) {
+                                    DismissValue.Default -> Color.White
+                                    else -> Color.Green
+                                }
+                            )
+                            val alignment = Alignment.CenterEnd
+                            val icon =  R.drawable.ic_archived
+
+                            val scale by animateFloatAsState(
+                                if (dismissState.targetValue == DismissValue.Default) 0.75f else 1f
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(color)
+                                    .padding(horizontal = Dp(20f))
+                                ,
+                                contentAlignment = alignment
+                            ) {
+                                Image(
+                                    painter = painterResource(id = icon),
+                                    contentDescription = "Archive Icon",
+                                    modifier = Modifier.scale(scale)
+                                )
+                            }
+                        },
+                        dismissContent = {
+                            Card(
+                                elevation = animateDpAsState(
+                                    if (dismissState.dismissDirection != null) 4.dp else 0.dp
+                                ).value,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .align(alignment = Alignment.CenterVertically)
+                            ) {
+                                BankAccountCard(
+                                    bankAccount = bankAccount,
+                                    goToBankAccountScreen = goToBankAccountScreen
+                                )
+                            }
                         }
                     )
-                    val alignment = Alignment.CenterEnd
-                    val icon =  R.drawable.ic_archived
-
-                    val scale by animateFloatAsState(
-                        if (dismissState.targetValue == DismissValue.Default) 0.75f else 1f
-                    )
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(color)
-                            .padding(horizontal = Dp(20f))
-                                ,
-                        contentAlignment = alignment
-                    ) {
-                        Image(
-                            painter = painterResource(id = icon),
-                            contentDescription = "Archive Icon",
-                            modifier = Modifier.scale(scale)
-                        )
-                    }
-                },
-                dismissContent = {
-                    Card(
-                        elevation = animateDpAsState(
-                            if (dismissState.dismissDirection != null) 4.dp else 0.dp
-                        ).value,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(alignment = Alignment.CenterVertically)
-                    ) {
-                        BankAccountCard(
-                            bankAccount = bankAccount,
-                            goToBankAccountScreen = goToBankAccountScreen
-                        )
-                    }
                 }
-            )
+            }
         }
     }
 }

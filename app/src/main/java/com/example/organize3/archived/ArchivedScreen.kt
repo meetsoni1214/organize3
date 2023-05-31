@@ -83,24 +83,20 @@ fun ArchivedScreenBody(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
 
-//        items(items = applicationList, key = {it.id}) {application ->
-//            ArchivedCard(
-//                imageRes = R.drawable.website_logo,
-//                contentDes = stringResource(id = R.string.appLogo),
-//                title = application.accountTitle,
-//                onCardClick = onCardClick,
-//                cardId = application.id,
-//                cardType = CardType.ApplicationAccountCard
-//            )
-//        }
-//        items(items = bankAccountList, key = {it.id}) { bankAccount ->
-//            ArchiveBankAccountCard(
-//                onCardClick = onCardClick,
-//                bankAccount = bankAccount,
-//                cardType = CardType.BankAccountCard
-//            )
-//        }
-//
+
+
+        items(items = applicationList, key = {it.id}) {application ->
+            ArchivedCard(
+                imageRes = R.drawable.website_logo,
+                contentDes = stringResource(id = R.string.appLogo),
+                title = application.accountTitle,
+                onCardClick = onCardClick,
+                cardId = application.id,
+                cardType = CardType.ApplicationAccountCard
+            )
+        }
+
+
         items(items = notesList, key = {it.id}) { note ->
             ArchivedNoteCard(
                 note = note,
@@ -111,17 +107,23 @@ fun ArchivedScreenBody(
             )
         }
 
-//        items(items = emailList, key = { it.id}) {email ->
-//            ArchivedCard(
-//                imageRes = R.drawable.email_icon,
-//                contentDes = stringResource(id = R.string.email_icon),
-//                title = email.accountTitle,
+        items(items = emailList, key = { it.id}) {email ->
+            ArchivedCard(
+                imageRes = R.drawable.email_icon,
+                contentDes = stringResource(id = R.string.email_icon),
+                title = email.accountTitle,
+                onCardClick = onCardClick,
+                cardId = email.id,
+                cardType = CardType.EmailAccountCard
+            )
+        }
+//        items(items = bankAccountList, key = {it.id}) { bankAccount ->
+//            ArchiveBankAccountCard(
 //                onCardClick = onCardClick,
-//                cardId = email.id,
-//                cardType = CardType.EmailAccountCard
+//                bankAccount = bankAccount,
+//                cardType = CardType.BankAccountCard
 //            )
 //        }
-
 
 
     }
@@ -130,7 +132,7 @@ fun ArchivedScreenBody(
 @Composable
 fun ArchivedNoteCard(
     modifier: Modifier = Modifier,
-    note: com.example.organize3.data.folderWithNotes.Note,
+    note: Note,
     onCardClick: (Int, Int, Int, CardType) -> Unit,
     cardType: CardType,
     contentDes: String,

@@ -1,5 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
-    ExperimentalMaterialApi::class, ExperimentalFoundationApi::class
+    ExperimentalMaterialApi::class, ExperimentalFoundationApi::class,
+    ExperimentalFoundationApi::class
 )
 
 package com.example.organize3.notes
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.DismissDirection
 import androidx.compose.material.DismissValue
@@ -31,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -43,6 +46,7 @@ import com.example.organize3.AppViewModelProvider
 import com.example.organize3.OrganizeTopAppBar
 import com.example.organize3.data.folderWithNotes.Note
 import com.example.organize3.R
+import com.example.organize3.emailAccounts.SearchField
 import kotlinx.coroutines.launch
 import androidx.compose.material.Card as Card1
 
@@ -60,6 +64,9 @@ fun NotesHome(
     val coroutineScope = rememberCoroutineScope()
     val folderId = viewModel.folderId
     val scaffoldState = rememberScaffoldState()
+    val isSearching by viewModel.isSearching.collectAsState()
+    val searchQuery by viewModel.searchText.collectAsState()
+    val notes by viewModel.notes.collectAsState()
     var longPressClick by rememberSaveable { mutableStateOf(false) }
 
     Scaffold (
@@ -85,9 +92,7 @@ fun NotesHome(
         }
             ){ values ->
         NotesScreen(
-            notesList = notesHomeUiState.notesList.filter { note ->
-                note.isArchived == 0
-            } ,
+            notesList = notes,
             onNoteClick = navigateToNote,
             modifier = modifier.padding(values),
             folderId = viewModel.folderId,
@@ -109,7 +114,13 @@ fun NotesHome(
                         }
                     }
                 }
-            }
+            },
+            isSearching = isSearching,
+            searchQuery = searchQuery,
+            realNotesList = notesHomeUiState.notesList.filter { note ->
+                note.isArchived == 0
+            },
+            onValueChange = viewModel::onSearchTextChange
         )
     }
 }
@@ -120,105 +131,146 @@ fun NotesScreen(
     notesList: List<Note>,
     onNoteClick: (Int, Int, Int) -> Unit,
     folderId: Int,
+    isSearching: Boolean,
+    searchQuery: String,
+    onValueChange: (String) -> Unit,
+    realNotesList: List<Note>,
     onLongClick: (Boolean) -> Unit,
     deleteNote: (Note) -> Unit
     ) {
-    if (notesList.isEmpty()) {
-        Box(
-            modifier = modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = stringResource(id = R.string.no_notes_added_message),
-                modifier = Modifier.padding(horizontal = 16.dp)
+
+            NotesList(
+                onNoteClick = { onNoteClick(folderId, it.id, 0) },
+                deleteNote = deleteNote,
+                notesList = notesList,
+                onLongClick = onLongClick,
+                isSearching = isSearching,
+                onValueChange = onValueChange,
+                searchQuery = searchQuery,
+                realNotesList = realNotesList
             )
-        }
-    }else {
-        Column(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            NotesList(onNoteClick = { onNoteClick(folderId, it.id, 0) }, deleteNote = deleteNote, notesList = notesList, onLongClick = onLongClick)
-        }
-    }
+
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun NotesList(
     modifier: Modifier = Modifier,
     onNoteClick: (Note) -> Unit,
     notesList: List<Note>,
+    isSearching: Boolean,
+    searchQuery: String,
+    onValueChange: (String) -> Unit,
+    realNotesList: List<Note>,
     onLongClick: (Boolean) -> Unit,
     deleteNote: (Note) -> Unit
 ) {
     var multipleSelect by rememberSaveable { mutableStateOf(false) }
-    LazyColumn(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(items = notesList, key = {it.id}) { note ->
-            val dismissState = rememberDismissState()
 
-            if (dismissState.isDismissed(DismissDirection.EndToStart)) {
-                deleteNote(note)
+    var isHintDisplayed by remember {
+        mutableStateOf(true)
+    }
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        SearchField(
+            value = searchQuery,
+            isHintDisplayed = isHintDisplayed,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(100))
+                .background(Color.LightGray)
+                .onFocusChanged {
+                    isHintDisplayed = !(it.hasFocus)
+                }
+            ,
+            hintText = stringResource(id = R.string.hint_search_notes),
+            onValueChanged = onValueChange)
+        Spacer(modifier = Modifier.height(16.dp))
+        if (notesList.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                if (realNotesList.isEmpty()) {
+                    Text(text = stringResource(id = R.string.no_notes_added_message),
+                        modifier = Modifier.padding(horizontal = 16.dp))
+                }else {
+                    Text(text = stringResource(id = R.string.no_search_result_found),
+                        modifier = Modifier.padding(horizontal = 16.dp))
+                }
             }
-            SwipeToDismiss(
-                state = dismissState,
-                modifier = Modifier
-                    .padding(vertical = Dp(1f)),
-                directions = setOf(
-                    DismissDirection.EndToStart
-                ),
-                dismissThresholds = { direction ->
-                    androidx.compose.material.FractionalThreshold(if (direction == DismissDirection.EndToStart) 0.3f else 0.05f)
-                },
-                background = {
-                    val color by animateColorAsState(
-                        when (dismissState.targetValue) {
-                            DismissValue.Default -> Color.White
-                            else -> Color.Green
+        }else {
+            LazyColumn(
+                modifier = modifier,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(items = notesList, key = {it.id}) { note ->
+                    val dismissState = rememberDismissState()
+
+                    if (dismissState.isDismissed(DismissDirection.EndToStart)) {
+                        deleteNote(note)
+                    }
+                    SwipeToDismiss(
+                        state = dismissState,
+                        modifier = Modifier
+                            .padding(vertical = Dp(1f)),
+                        directions = setOf(
+                            DismissDirection.EndToStart
+                        ),
+                        dismissThresholds = { direction ->
+                            androidx.compose.material.FractionalThreshold(if (direction == DismissDirection.EndToStart) 0.3f else 0.05f)
+                        },
+                        background = {
+                            val color by animateColorAsState(
+                                when (dismissState.targetValue) {
+                                    DismissValue.Default -> Color.White
+                                    else -> Color.Green
+                                }
+                            )
+                            val alignment = Alignment.CenterEnd
+                            val icon = R.drawable.ic_archived
+                            val scale by animateFloatAsState(
+                                if (dismissState.targetValue == DismissValue.Default) 0.75f else 1f
+                            )
+                            Box (
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(color)
+                                    .padding(horizontal = Dp(20f))
+                                ,
+                                contentAlignment = alignment
+                            ){
+                                Image(painter = painterResource(id = icon),
+                                    contentDescription = "Archive Icon",
+                                    modifier = Modifier.scale(scale)
+                                )
+                            }
+                        },
+                        dismissContent = {
+                            Card1(
+                                elevation = animateDpAsState(
+                                    if (dismissState.dismissDirection != null) 4.dp else 0.dp
+                                ).value,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .align(alignment = Alignment.CenterVertically)
+                            ) {
+                                NoteCard(onNoteClick = onNoteClick,
+                                    note = note,
+                                    onLongClick = {value ->
+                                        multipleSelect = value
+                                    },
+                                    multipleSelect = true
+                                )
+                            }
                         }
                     )
-                    val alignment = Alignment.CenterEnd
-                    val icon = R.drawable.ic_archived
-                    val scale by animateFloatAsState(
-                        if (dismissState.targetValue == DismissValue.Default) 0.75f else 1f
-                    )
-                    Box (
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(color)
-                            .padding(horizontal = Dp(20f))
-                        ,
-                        contentAlignment = alignment
-                    ){
-                        Image(painter = painterResource(id = icon),
-                            contentDescription = "Archive Icon",
-                            modifier = Modifier.scale(scale)
-                        )
-                    }
-                },
-                dismissContent = {
-                    Card1(
-                        elevation = animateDpAsState(
-                            if (dismissState.dismissDirection != null) 4.dp else 0.dp
-                        ).value,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(alignment = Alignment.CenterVertically)
-                    ) {
-                        NoteCard(onNoteClick = onNoteClick,
-                            note = note,
-                            onLongClick = {value ->
-                                multipleSelect = value
-                            },
-                            multipleSelect = true
-                        )
-                    }
-                }
-            )
 
+                }
+            }
         }
     }
 }

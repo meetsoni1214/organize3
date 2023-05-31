@@ -4,10 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.organize3.data.application.ApplicationAccount
 import com.example.organize3.data.application.ApplicationRepository
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 /**
@@ -35,6 +32,31 @@ class ApplicationViewModel(
 
     companion object {
         private const val TIMEOUT_MILLIS = 5_000L
+    }
+    private val _searchText = MutableStateFlow("")
+    val searchText = _searchText.asStateFlow()
+
+    private val _isSearching = MutableStateFlow(false)
+    val isSearching = _isSearching.asStateFlow()
+
+    val applicationAccounts = searchText
+        .combine(applicationHomeUiState) {text, uiState ->
+            if (text.isBlank()) {
+                uiState.applicationList
+            }else {
+                uiState.applicationList.filter {
+                    it.doesMatchSearchQuery(text)
+                }
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
+            initialValue = applicationHomeUiState.value.applicationList
+        )
+
+    fun onSearchTextChange(text: String) {
+        _searchText.value = text
     }
 
     private fun selectSocials(isSocials: Boolean) {

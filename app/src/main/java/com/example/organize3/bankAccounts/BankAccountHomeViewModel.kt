@@ -4,10 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.organize3.data.bankAccount.BankAccount
 import com.example.organize3.data.bankAccount.BankAccountRepository
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
 
 
 /**
@@ -25,6 +22,29 @@ class BankAccountHomeViewModel(
 
     companion object {
         private const val TIMEOUT_MILLIS = 5_000L
+    }
+    private val _searchText = MutableStateFlow("")
+    val searchText = _searchText.asStateFlow()
+
+    private val _isSearching = MutableStateFlow(false)
+    val isSearching = _isSearching.asStateFlow()
+
+    val bankAccounts = searchText
+        .combine(bankAccountHomeUiState) {text, uiState ->
+            if (text.isBlank()) {
+                uiState.bankAccounts
+            } else {
+                uiState.bankAccounts.filter {
+                    it.doesMatchSearchQuery(text)
+                }
+            }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
+            initialValue = bankAccountHomeUiState.value.bankAccounts
+        )
+    fun onSearchTextChange(text: String) {
+        _searchText.value = text
     }
 
     suspend fun archiveBankAccount(bankAccount: BankAccount) {

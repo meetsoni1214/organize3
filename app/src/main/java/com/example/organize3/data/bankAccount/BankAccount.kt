@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.example.organize3.R
+import com.example.organize3.Searchable
 import com.example.organize3.model.Bank
 
 @Entity(tableName = "bankaccount")
@@ -30,4 +31,8 @@ data class BankAccount (
     @ColumnInfo(name = "login_pin") val loginPin: String = "",
     @ColumnInfo(name = "t_pin") val transactionPin: String = "",
     @ColumnInfo(name = "isArchived") val isArchived: Int = 0
-        )
+        ) : Searchable {
+    override fun doesMatchSearchQuery(query: String): Boolean {
+        return bankName.contains(query.trim(), ignoreCase = true) || accountHolderName.contains(query.trim(), ignoreCase = true)
+    }
+}

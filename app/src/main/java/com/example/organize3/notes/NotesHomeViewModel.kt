@@ -34,6 +34,31 @@ class NotesHomeViewModel (
             companion object {
                 private const val TIMEOUT_MILLIS = 5_000L
             }
+
+    private val _searchText = MutableStateFlow("")
+    val searchText = _searchText.asStateFlow()
+
+    private val _isSearching = MutableStateFlow(false)
+    val isSearching = _isSearching.asStateFlow()
+
+    val  notes = searchText
+        .combine(noteHomeUiState) {text, uiState ->
+            if (text.isBlank()) {
+                uiState.notesList
+            } else {
+                uiState.notesList.filter {
+                    it.doesMatchSearchQuery(text)
+                }
+            }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
+            initialValue = noteHomeUiState.value.notesList
+        )
+    fun onSearchTextChange(text: String) {
+        _searchText.value = text
+    }
+
     suspend fun archiveNote(note: Note) {
         noteRepository.updateNote(note.copy(isArchived = 1))
     }
