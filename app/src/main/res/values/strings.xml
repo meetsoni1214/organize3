@@ -144,6 +144,11 @@
     <string name="bank_logo">Bank\'s Logo</string>
     <string name="hint_email_search">Search Email Accounts</string>
     <string name="hint_bankAccount_search">Search Bank Accounts</string>
+    <string name="try_again">Try again</string>
+    <string name="email_error">Please insert a valid email.</string>
+    <string name="empty_password_error">Password cannot be empty.</string>
+    <string name="recovery_email_sent">Check your inbox for the recovery email.</string>
+    <string name="generic_error">Something wrong happened. Please try again.</string>
     <string name="hint_search_notes">Search Notes</string>
     <string name="application_account_details">Enter Details</string>
     <string name="login">Let\'s Start with Login</string>

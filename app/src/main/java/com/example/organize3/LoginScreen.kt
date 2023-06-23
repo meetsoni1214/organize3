@@ -25,37 +25,36 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role.Companion.Image
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.organize3.presentation.sign_in.SignInState
+import com.example.organize3.presentation.sign_in.SignInViewModel
 
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
-    goToMainScreen:() -> Unit,
-    state: SignInState,
+    signInEmailPass:(String, String) -> Unit,
+//    state: SignInState,
     onSignInClick: () -> Unit,
-    goToRegisterScreen:() -> Unit
+    goToRegisterScreen:() -> Unit,
+    viewModel: SignInViewModel = hiltViewModel()
 ) {
+    val uiState by viewModel.uiState
     val context = LocalContext.current
-    LaunchedEffect(key1 = state.signInError) {
-        state.signInError?.let { error ->
-            Toast.makeText(
-                context,
-                error,
-                Toast.LENGTH_LONG
-            ).show()
-        }
-    }
+//    LaunchedEffect(key1 = state.signInError) {
+//        state.signInError?.let { error ->
+//            Toast.makeText(
+//                context,
+//                error,
+//                Toast.LENGTH_LONG
+//            ).show()
+//        }
+//    }
     Scaffold (
         modifier = modifier.fillMaxSize()
             ){ values ->
@@ -63,9 +62,14 @@ fun LoginScreen(
             Modifier
                 .verticalScroll(rememberScrollState())
                 .padding(values),
-        goToMainScreen = goToMainScreen,
+            signInEmailPass = { viewModel.onSignInClick(signInEmailPass) },
             goToRegisterScreen = goToRegisterScreen,
-            onSignInClick = onSignInClick
+            onSignInClick = onSignInClick,
+            email = uiState.email,
+            password = uiState.password,
+            onEmailChange = viewModel::onEmailChange,
+            onPasswordChange = viewModel::onPasswordChange,
+            onForgotPasswordClick = { viewModel.onForgotPasswordClick() }
         )
     }
 }
@@ -73,9 +77,14 @@ fun LoginScreen(
 @Composable
 fun LoginScreenBody(
     modifier: Modifier = Modifier,
-    goToMainScreen: () -> Unit,
+    signInEmailPass:() -> Unit,
     onSignInClick: () -> Unit,
-    goToRegisterScreen: () -> Unit
+    goToRegisterScreen: () -> Unit,
+    onForgotPasswordClick: () -> Unit,
+    email: String,
+    onEmailChange: (String) -> Unit,
+    password: String,
+    onPasswordChange: (String) -> Unit
 ) {
     Column(
         modifier = modifier
@@ -93,8 +102,13 @@ fun LoginScreenBody(
         )
         LoginCard(
             Modifier.padding(start = 16.dp, end = 16.dp, top = 28.dp),
-            goToMainScreen = goToMainScreen,
-            onSignInClick = onSignInClick
+            signInEmailPass = signInEmailPass,
+            onSignInClick = onSignInClick,
+            email = email,
+            password = password,
+            onEmailChange = onEmailChange,
+            onPasswordChange = onPasswordChange,
+            onForgotPasswordClick = onForgotPasswordClick
         )
         RegisterCard(
             Modifier.padding(start = 16.dp, end = 16.dp, top = 90.dp),
@@ -107,10 +121,15 @@ fun LoginScreenBody(
 fun LoginCard(
     modifier: Modifier = Modifier,
     onSignInClick: () -> Unit,
-    goToMainScreen: () -> Unit,
+    signInEmailPass:() -> Unit,
+    email: String,
+    onEmailChange: (String) -> Unit,
+    password: String,
+    onPasswordChange: (String) -> Unit,
+    onForgotPasswordClick: () -> Unit
 ) {
     var passwordVisible by rememberSaveable { mutableStateOf(false)}
-    var password by rememberSaveable { mutableStateOf("") }
+//    var password by rememberSaveable { mutableStateOf("") }
     Card(
         modifier = modifier,
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
@@ -122,8 +141,8 @@ fun LoginCard(
             verticalArrangement = Arrangement.spacedBy(10.dp)
                 ){
             OutlinedTextField(
-                value = "",
-                onValueChange = {},
+                value = email,
+                onValueChange = { onEmailChange(it) },
                 singleLine = true,
                 label = {Text(text = stringResource(id = R.string.email_id))},
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
@@ -134,7 +153,7 @@ fun LoginCard(
             )
             OutlinedTextField(
                 value = password,
-                onValueChange = {password = it},
+                onValueChange = {onPasswordChange(it)},
                 singleLine = true,
                 label = {Text(text = stringResource(id = R.string.password))},
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -155,17 +174,22 @@ fun LoginCard(
                     }
                 }
             )
-            Text(
-                text = stringResource(id = R.string.forgot_pass),
-                style = MaterialTheme.typography.labelMedium,
-                modifier = Modifier.align(Alignment.End)
-            )
+            TextButton(
+               onClick = onForgotPasswordClick,
+                modifier = Modifier
+                    .align(Alignment.End))
+                    {
+                        Text(
+                            text = stringResource(id = R.string.forgot_pass),
+                            style = MaterialTheme.typography.labelMedium,
+                        )
+                    }
             Button(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 4.dp)
                 ,
-                onClick = { goToMainScreen() }) {
+                onClick = signInEmailPass) {
                 Text(text = stringResource(id = R.string.login_button_text))
             }
             Text(

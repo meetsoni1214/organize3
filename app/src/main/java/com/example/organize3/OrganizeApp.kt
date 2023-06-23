@@ -8,12 +8,13 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.example.organize3.applications.UserPreferencesRepository
 import com.example.organize3.data.AppContainer
 import com.example.organize3.data.AppDataContainer
+import dagger.hilt.android.HiltAndroidApp
 
 private const val IS_SOCIALS_PREFERENCE_NAME = "socials_preferences"
 private val Context.datastore: DataStore<Preferences> by preferencesDataStore(
     name = IS_SOCIALS_PREFERENCE_NAME
 )
-class OrganizeApp: Application() {
+@HiltAndroidApp class OrganizeApp: Application() {
     /**
      * AppContainer instance used by the rest of classes to obtain dependencies
      */

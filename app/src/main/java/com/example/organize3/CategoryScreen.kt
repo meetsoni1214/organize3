@@ -57,7 +57,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun CategoryScreen(
     modifier: Modifier = Modifier,
-    userData: UserData?,
+//    userData: UserData?,
     onSignOut: () -> Unit,
     viewModel: FolderHomeViewModel = viewModel(factory = AppViewModelProvider.Factory),
     onFolderSelected: (Int, String) -> Unit,
@@ -72,7 +72,7 @@ fun CategoryScreen(
         scaffoldState = scaffoldState,
         drawerContent = {
                         DrawerHeader(
-                            userData = userData
+                            userData = null
                         )
                         DrawerBody(
                             onFolderSelected = onFolderSelected,
