@@ -69,6 +69,10 @@ fun CategoryScreen(
     var fName by rememberSaveable { mutableStateOf("") }
     val folderHomeUiState by viewModel.folderHomeUiState.collectAsState()
     Scaffold(
+        modifier = Modifier
+            .background(MaterialTheme.colorScheme.surface)
+            .statusBarsPadding()
+            .navigationBarsPadding(),
         scaffoldState = scaffoldState,
         drawerContent = {
                         DrawerHeader(
@@ -288,6 +292,7 @@ fun DrawerMenuInsideItem(
     },
 ) {
     val modifiedText = if (isFolderSelected) folderName else stringResource(id = text)
+
 
         Row(
             modifier = modifier

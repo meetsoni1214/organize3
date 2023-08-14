@@ -157,7 +157,7 @@ fun BankAccountList(
                 .clip(RoundedCornerShape(100))
                 .background(Color.LightGray)
                 .onFocusChanged {
-                    isHintDisplayed = it.hasFocus
+                    isHintDisplayed = !(it.hasFocus)
                 }
             ,
             hintText = stringResource(id = R.string.hint_bankAccount_search),
