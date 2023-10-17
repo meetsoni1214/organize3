@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -84,7 +85,10 @@ fun ApplicationDetailScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { gotoEditScreen(uiState.value.id)},
-                modifier = Modifier.navigationBarsPadding()
+                shape = MaterialTheme.shapes.medium,
+                modifier = Modifier.navigationBarsPadding(),
+                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                contentColor = MaterialTheme.colorScheme.onTertiaryContainer
             ) {
                 Icon(imageVector = Icons.Default.Edit, contentDescription = stringResource(id = R.string.edit_app_account_details))
             }

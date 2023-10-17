@@ -6,6 +6,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -14,9 +15,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -90,6 +94,7 @@ fun OtherTextFields(
     onEmailValueChange: (EmailUiState) -> Unit = {},
     enabled: Boolean = true
     ) {
+    val focusManager = LocalFocusManager.current
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
     Column(modifier = modifier
         .fillMaxWidth()
@@ -101,8 +106,15 @@ fun OtherTextFields(
             modifier = Modifier
                 .fillMaxWidth(),
             singleLine = true,
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.moveFocus(FocusDirection.Down)
+                }
+            ),
             enabled = enabled,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next,
+                keyboardType = KeyboardType.Email),
             label = { Text(stringResource(R.string.email_id)) })
         OutlinedTextField(
             value = emailUiState.password,
@@ -110,8 +122,15 @@ fun OtherTextFields(
             modifier = Modifier
                 .fillMaxWidth(),
             singleLine = true,
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.moveFocus(FocusDirection.Down)
+                }
+            ),
             enabled = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next,
+                keyboardType = KeyboardType.Password),
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                            val image = if (passwordVisible) {
@@ -127,6 +146,14 @@ fun OtherTextFields(
             label = { Text(stringResource(R.string.password)) })
         OutlinedTextField(
             value = emailUiState.remarks,
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next,
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.clearFocus()
+                }
+            ),
             onValueChange = {onEmailValueChange(emailUiState.copy(remarks = it))},
             modifier = Modifier
                 .fillMaxWidth(),
@@ -142,6 +169,7 @@ fun FirstRow(
     emailUiState: EmailUiState,
     onEmailValueChange: (EmailUiState) -> Unit,
     enabled: Boolean = true) {
+    val focusManager = LocalFocusManager.current
     Row(modifier = modifier
         .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -150,6 +178,14 @@ fun FirstRow(
             value = emailUiState.title,
             onValueChange = {onEmailValueChange(emailUiState.copy(title = it))},
             enabled = enabled,
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next,
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.moveFocus(FocusDirection.Down)
+                }
+            ),
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),

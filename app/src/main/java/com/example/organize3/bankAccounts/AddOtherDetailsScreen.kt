@@ -11,6 +11,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -24,14 +25,17 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -173,6 +177,7 @@ fun BankOtherTextFields(
     val accountType = listOf(stringResource(id = R.string.saving), stringResource(id = R.string.current))
     var expanded by remember { mutableStateOf(false) }
     val selectedOptionText = bankAccountUiState.accountType
+    val focusManager = LocalFocusManager.current
     val icon = if (expanded)
         Icons.Filled.KeyboardArrowUp
     else
@@ -188,12 +193,28 @@ fun BankOtherTextFields(
             value = bankAccountUiState.accountHolderName,
             onValueChange = {onValueChange(bankAccountUiState.copy(accountHolderName = it))},
             singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.moveFocus(FocusDirection.Down)
+                }
+            ),
             modifier = Modifier.fillMaxWidth(),
             label = { Text(text = stringResource(id = R.string.account_holder_name))}
         )
         OutlinedTextField(
             value = selectedOptionText,
             readOnly = true,
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.moveFocus(FocusDirection.Down)
+                }
+            ),
             onValueChange = {
                 onValueChange(bankAccountUiState.copy(accountType = selectedOptionText))
                             },
@@ -228,37 +249,74 @@ fun BankOtherTextFields(
         OutlinedTextField(
             value = bankAccountUiState.accountNumber,
             onValueChange = {onValueChange(bankAccountUiState.copy(accountNumber = it))},
-            modifier =  Modifier.fillMaxWidth(),
             singleLine = true,
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.moveFocus(FocusDirection.Down)
+                }
+            ),
+            modifier =  Modifier.fillMaxWidth(),
             label = { Text(text = stringResource(id = R.string.account_no))},
-            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters)
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next,
+                capitalization = KeyboardCapitalization.Characters
+            )
         )
         OutlinedTextField(
             value = bankAccountUiState.ifscCode,
             onValueChange = {onValueChange(bankAccountUiState.copy(ifscCode = it))},
             modifier =  Modifier.fillMaxWidth(),
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.moveFocus(FocusDirection.Down)
+                }
+            ),
             singleLine = true,
             label = { Text(text = stringResource(id = R.string.account_ifsc))},
-            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters)
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next,
+                capitalization = KeyboardCapitalization.Characters)
         )
         OutlinedTextField(
             value = bankAccountUiState.regMobNo,
             onValueChange = {onValueChange(bankAccountUiState.copy(regMobNo = it))},
             modifier =  Modifier.fillMaxWidth(),
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.moveFocus(FocusDirection.Down)
+                }
+            ),
             singleLine = true,
             label = { Text(text = stringResource(id = R.string.account_mob_no))},
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next,
+                keyboardType = KeyboardType.Phone)
         )
         OutlinedTextField(
             value = bankAccountUiState.regEmail,
             onValueChange = {onValueChange(bankAccountUiState.copy(regEmail = it))},
             modifier =  Modifier.fillMaxWidth(),
             singleLine = true,
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.moveFocus(FocusDirection.Down)
+                }
+            ),
             label = { Text(text = stringResource(id = R.string.account_email))},
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next,
+                keyboardType = KeyboardType.Email)
         )
         OutlinedTextField(
             value = bankAccountUiState.remarks,
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.clearFocus()
+                }
+            ),
             onValueChange = {onValueChange(bankAccountUiState.copy(remarks = it))},
             modifier =  Modifier.fillMaxWidth(),
             label = { Text(text = stringResource(id = R.string.remarks))},
@@ -323,6 +381,7 @@ fun AtmCardDetails(
     bankAccountUiState: BankAccountUiState,
     onValueChange: (BankAccountUiState) -> Unit
 ) {
+    val focusManager = LocalFocusManager.current
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val mCalendar = Calendar.getInstance()
@@ -363,7 +422,14 @@ fun AtmCardDetails(
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             label = { Text(text = stringResource(id = R.string.name_on_card))},
-            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters)
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.moveFocus(FocusDirection.Down)
+                }
+            ),
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next,
+                capitalization = KeyboardCapitalization.Characters)
         )
         OutlinedTextField(
             value = cardNo,
@@ -373,10 +439,17 @@ fun AtmCardDetails(
                 }
                 else Toast.makeText(context,"Card Number should not be more than 16 digits", Toast.LENGTH_SHORT).show()
             },
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.clearFocus()
+                }
+            ),
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             label = { Text(text = stringResource(id = R.string.card_no))},
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next,
+                keyboardType = KeyboardType.Number)
         )
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -408,8 +481,15 @@ fun AtmCardDetails(
                 modifier = Modifier
                     .width(screenWidth / 2),
                 label = { Text(text = stringResource(id = R.string.cvv))},
+                keyboardActions = KeyboardActions(
+                    onNext = {
+                        focusManager.moveFocus(FocusDirection.Down)
+                    }
+                ),
                 visualTransformation = if (cvvVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Next,
+                    keyboardType = KeyboardType.NumberPassword),
                 trailingIcon = {
                     val image = if (cvvVisible) {
                         R.drawable.visibility_off
@@ -431,9 +511,16 @@ fun AtmCardDetails(
             else Toast.makeText(context, "Card Atm Pin should not be more than 4 digits", Toast.LENGTH_SHORT).show()},
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.clearFocus()
+                }
+            ),
             label = { Text(text = stringResource(id = R.string.atm_pin))},
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next,
+                keyboardType = KeyboardType.NumberPassword),
             trailingIcon = {
                 val image = if (passwordVisible) {
                     R.drawable.visibility_off
@@ -510,6 +597,7 @@ fun UpiCardDetails(
         mutableStateOf(false)
     }
     val context = LocalContext.current
+    val focusManager = LocalFocusManager.current
     val maxUpi = 6
     val upiPin = bankAccountUiState.upiPin
     Column(
@@ -521,8 +609,15 @@ fun UpiCardDetails(
             value = upiPin,
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next,
+                keyboardType = KeyboardType.NumberPassword),
             label = { Text(text = stringResource(id = R.string.upi_pin))},
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.clearFocus()
+                }
+            ),
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                            val image = if (passwordVisible) {
@@ -596,6 +691,7 @@ fun BankingAppDetails(
     bankAccountUiState: BankAccountUiState,
     onValueChange: (BankAccountUiState) -> Unit
 ) {
+    val focusManager = LocalFocusManager.current
     var passwordVisible by rememberSaveable {
         mutableStateOf(false)
     }
@@ -607,6 +703,12 @@ fun BankingAppDetails(
             value = bankAccountUiState.loginPin,
             label = { Text(text = stringResource(id = R.string.login_pin))},
             modifier = Modifier.fillMaxWidth(),
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.moveFocus(FocusDirection.Down)
+                }
+            ),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             singleLine = true,
             onValueChange = {onValueChange(bankAccountUiState.copy(loginPin = it))})
         OutlinedTextField(
@@ -614,7 +716,14 @@ fun BankingAppDetails(
             onValueChange = {onValueChange(bankAccountUiState.copy(transactionPin = it))},
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next,
+                keyboardType = KeyboardType.Password),
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.clearFocus()
+                }
+            ),
             label = { Text(text = stringResource(id = R.string.transaction_Pin))},
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {

@@ -43,6 +43,7 @@ import com.example.organize3.OrganizeTopAppBar
 import com.example.organize3.R
 import com.example.organize3.data.application.ApplicationAccount
 import com.example.organize3.emailAccounts.SearchField
+import com.example.organize3.ui.theme.shapes
 import kotlinx.coroutines.launch
 
 
@@ -58,7 +59,6 @@ fun AddedApplicationScreen(
     val applicationUiState by viewModel.applicationHomeUiState.collectAsState()
     val anotherUiState by viewModel.anotherUiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
-    val scaffoldState = rememberScaffoldState()
     val applicationAccounts by viewModel.applicationAccounts.collectAsState()
     val searchQuery by viewModel.searchText.collectAsState()
     val isSearching by viewModel.isSearching.collectAsState()
@@ -85,10 +85,14 @@ fun AddedApplicationScreen(
             id = R.string.linkedin_remarks), appLogo = R.drawable.linkedin_icon),
         )
     Scaffold (
-        scaffoldState = scaffoldState,
         modifier = modifier.fillMaxSize(),
     floatingActionButton = {
-        FloatingActionButton(onClick = onAddApplication) {
+        FloatingActionButton(
+            onClick = onAddApplication,
+            shape = MaterialTheme.shapes.medium,
+            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+            contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+        ) {
             Icon(imageVector = Icons.Default.Add, contentDescription = null)
         }
     },
@@ -114,18 +118,6 @@ fun AddedApplicationScreen(
                 coroutineScope.launch {
                     viewModel.archiveApplication(applicationAccount)
 
-                }
-                coroutineScope.launch {
-                    val snackbarResult = scaffoldState.snackbarHostState.showSnackbar(
-                        message = "Item deleted!",
-                        actionLabel = "Undo"
-                    )
-                    when (snackbarResult) {
-                        SnackbarResult.Dismissed -> Log.d("SnackbarDemo", "Dismissed")
-                        SnackbarResult.ActionPerformed -> {
-
-                        }
-                    }
                 }
             },
             realApplicationList = applicationUiState.applicationList,
@@ -159,6 +151,7 @@ fun ApplicationScreen(
 ) {
 
             ApplicationList(
+                modifier = modifier,
                 applicationList = applicationList,
                 onApplicationClick = onApplicationClick,
                 deleteApplication = deleteApplication,
@@ -170,6 +163,7 @@ fun ApplicationScreen(
 
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ApplicationList(
     modifier: Modifier = Modifier,
@@ -188,7 +182,7 @@ fun ApplicationList(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(horizontal = 16.dp)
     ) {
         SearchField(
             value = searchQuery,
@@ -197,7 +191,7 @@ fun ApplicationList(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(100))
-                .background(Color.LightGray)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
                 .onFocusChanged {
                     isHintDisplayed = !(it.hasFocus)
                 },
@@ -217,7 +211,7 @@ fun ApplicationList(
                 }
             }
         } else {
-            LazyColumn(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            LazyColumn(modifier = Modifier, verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 items(items = applicationList, key = {it.id}) {application ->
                     val dismissState = rememberDismissState()
 
@@ -238,7 +232,7 @@ fun ApplicationList(
                         background = {
                             val color by animateColorAsState(
                                 when (dismissState.targetValue) {
-                                    androidx.compose.material.DismissValue.Default -> Color.White
+                                    androidx.compose.material.DismissValue.Default -> MaterialTheme.colorScheme.surfaceColorAtElevation(5.dp)
                                     else -> Color.Green
                                 }
                             )
@@ -268,9 +262,11 @@ fun ApplicationList(
                                 elevation = animateDpAsState(
                                     if (dismissState.dismissDirection != null) 4.dp else 0.dp
                                 ).value,
+                                shape = shapes.medium,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .align(alignment = Alignment.CenterVertically)
+                                    .align(alignment = Alignment.CenterVertically),
+                                backgroundColor  = MaterialTheme.colorScheme.secondaryContainer
                             ) {
                                 ApplicationCard(application = application, onApplicationClick = onApplicationClick)
                             }
@@ -292,7 +288,11 @@ fun ApplicationCard(
     Card(modifier = modifier
         .padding(4.dp)
         .clickable { onApplicationClick(application.id, 0) }
-        .fillMaxWidth()
+        .fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        colors  = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
     ) {
         Row(modifier = Modifier
             .fillMaxWidth(),
@@ -310,7 +310,7 @@ fun ApplicationCard(
                 text = application.accountTitle,
                 modifier = Modifier
                     .padding(8.dp),
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleLarge
             )
         }
     }

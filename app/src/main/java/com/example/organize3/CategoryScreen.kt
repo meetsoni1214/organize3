@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.DismissDirection
 import androidx.compose.material.DismissValue
+import androidx.compose.material.DrawerState
 import androidx.compose.material.SnackbarResult
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -52,86 +53,80 @@ import com.example.organize3.data.folderWithNotes.Folder
 import com.example.organize3.data.folderWithNotes.FolderWithNotes
 import com.example.organize3.folder.FolderHomeViewModel
 import com.example.organize3.presentation.sign_in.UserData
+import com.example.organize3.ui.theme.shapes
 import kotlinx.coroutines.launch
 
 @Composable
 fun CategoryScreen(
     modifier: Modifier = Modifier,
+    drawerState: androidx.compose.material3.DrawerState,
     userData: UserData?,
     onSignOut: () -> Unit,
+    closeDrawer: () -> Unit,
+    onNavigationIconClick: () -> Unit,
     viewModel: FolderHomeViewModel = viewModel(factory = AppViewModelProvider.Factory),
     onFolderSelected: (Int, String) -> Unit,
     onArchivedSelected: () -> Unit,
         onItemSelected: (Int) -> Unit) {
     val showDialog = rememberSaveable { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
-    val scaffoldState = rememberScaffoldState()
     var fName by rememberSaveable { mutableStateOf("") }
     val folderHomeUiState by viewModel.folderHomeUiState.collectAsState()
-    Scaffold(
-        modifier = Modifier
-            .background(MaterialTheme.colorScheme.surface)
-            .statusBarsPadding()
-            .navigationBarsPadding(),
-        scaffoldState = scaffoldState,
-        drawerContent = {
-                        DrawerHeader(
-                            userData = userData
-                        )
-                        DrawerBody(
-                            onFolderSelected = onFolderSelected,
-                            onCategorySelected = onItemSelected,
-                            onArchivedSelected = onArchivedSelected,
-                            folderList = folderHomeUiState.folderList,
-                            closeDrawer = {
-                                coroutineScope.launch {
-                                    scaffoldState.drawerState.close()
-                                }
-                            },
-                            onSignOut = onSignOut
-                        )
-        },
-        floatingActionButton = {
-             FloatingActionButton(onClick = {
-                 showDialog.value = true
-             }) {
-                 Icon(imageVector = Icons.Default.Add, contentDescription = null)
-             }
-        },
-        topBar = {
-        OrganizeTopAppBar(
-            title = stringResource(id = R.string.choose_category),
-            onNavigationIconClick = {
-                                     coroutineScope.launch {
-                                         scaffoldState.drawerState.open()
-                                     }
+    MyNavigationDrawer(
+        drawerState = drawerState,
+        userData = userData,
+        onSignOut = onSignOut,
+        onFolderSelected = onFolderSelected,
+        onCategorySelected = onItemSelected,
+        folderList = folderHomeUiState.folderList,
+        closeDrawer = closeDrawer,
+        onArchivedSelected = onArchivedSelected) {
+        Scaffold(
+            modifier = Modifier
+                .statusBarsPadding()
+                .navigationBarsPadding(),
+            floatingActionButton = {
+                FloatingActionButton(onClick = {
+                    showDialog.value = true
+                },
+                    shape = MaterialTheme.shapes.medium,
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                ) {
+                    Icon(imageVector = Icons.Default.Add, contentDescription = null)
+                }
             },
-            canNavigateBack = false)
-    },
+            topBar = {
+                OrganizeTopAppBar(
+                    title = stringResource(id = R.string.choose_category),
+                    onNavigationIconClick = onNavigationIconClick,
+                    canNavigateBack = false)
+            },
 
-    ) { innerPadding ->
-        CategoriesBody(
-            modifier = modifier.padding(innerPadding),
-            onCategorySelected = onItemSelected,
-            folderList = folderHomeUiState.folderList,
-            onFolderSelected = onFolderSelected,
-            deleteFolder = {folder, id ->
-                coroutineScope.launch {
-                    viewModel.deleteFolder(folder, id)
-                }
-                coroutineScope.launch {
-                    val snackBarResult = scaffoldState.snackbarHostState.showSnackbar(
-                        message = "Folder deleted!",
-                        actionLabel = "Undo"
-                    )
-                    when (snackBarResult) {
-                        SnackbarResult.Dismissed -> Log.d("SnackBarDemo", "Dismissed")
-                        SnackbarResult.ActionPerformed -> {
-                        }
+            ) { innerPadding ->
+            CategoriesBody(
+                modifier = modifier.padding(innerPadding),
+                onCategorySelected = onItemSelected,
+                folderList = folderHomeUiState.folderList,
+                onFolderSelected = onFolderSelected,
+                deleteFolder = {folder, id ->
+                    coroutineScope.launch {
+                        viewModel.deleteFolder(folder, id)
                     }
+//                    coroutineScope.launch {
+//                        val snackBarResult = scaffoldState.snackbarHostState.showSnackbar(
+//                            message = "Folder deleted!",
+//                            actionLabel = "Undo"
+//                        )
+//                        when (snackBarResult) {
+//                            SnackbarResult.Dismissed -> Log.d("SnackBarDemo", "Dismissed")
+//                            SnackbarResult.ActionPerformed -> {
+//                            }
+//                        }
+//                    }
                 }
-            }
-        )
+            )
+        }
     }
     if (showDialog.value) {
         FolderNameDialog(
@@ -147,6 +142,7 @@ fun CategoryScreen(
             }
         )
     }
+
 }
 
 @Composable
@@ -180,16 +176,15 @@ fun FolderNameDialog(
         },
         modifier = modifier.padding(16.dp),
         dismissButton = {
-            TextButton(onClick = onDeleteCancel) {
+            androidx.compose.material3.OutlinedButton(onClick = onDeleteCancel) {
                 Text(text = stringResource(id = R.string.cancel))
             }
         },
         confirmButton = {
-            TextButton(
+            androidx.compose.material3.Button(
                 onClick = onCreateFolder,
                 enabled = fname.isNotBlank()
             ) {
-
                 Text(text = stringResource(id = R.string.create))
             }
         }
@@ -292,8 +287,6 @@ fun DrawerMenuInsideItem(
     },
 ) {
     val modifiedText = if (isFolderSelected) folderName else stringResource(id = text)
-
-
         Row(
             modifier = modifier
                 .fillMaxWidth()
@@ -381,6 +374,38 @@ fun DrawerBody(
 }
 
 @Composable
+fun MyNavigationDrawer(
+    drawerState: androidx.compose.material3.DrawerState,
+    userData: UserData?,
+    onSignOut: () -> Unit,
+    onFolderSelected: (Int, String) -> Unit,
+    onCategorySelected: (Int) -> Unit,
+    folderList: List<FolderWithNotes>,
+    closeDrawer: () -> Unit,
+    onArchivedSelected: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet(
+                content = {
+                    DrawerHeader(userData = userData)
+                    DrawerBody(
+                        folderList = folderList,
+                        onFolderSelected = onFolderSelected,
+                        onArchivedSelected = onArchivedSelected,
+                        onCategorySelected = onCategorySelected,
+                        onSignOut = onSignOut,
+                        closeDrawer = closeDrawer
+                    )
+                }
+            )
+        },
+        content = content
+    )
+}
+@Composable
 fun NavigationFolders(
     modifier: Modifier = Modifier,
     folderList: List<FolderWithNotes>,
@@ -446,7 +471,7 @@ fun CategoriesBody(
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
             contentPadding = PaddingValues(16.dp)) {
             items(Categories) { item ->
                 CategoryCard(imageId = item.ImageResourceID, textId = item.stringResourceId, onCategorySelected = {itemId ->
@@ -472,7 +497,7 @@ fun CategoriesBody(
                     background = {
                         val color by animateColorAsState(
                             when (dismissState.targetValue) {
-                                DismissValue.Default -> Color.White
+                                DismissValue.Default -> MaterialTheme.colorScheme.surfaceColorAtElevation(5.dp)
                                 else -> Color.Red
                             }
                         )
@@ -502,7 +527,9 @@ fun CategoriesBody(
                             ).value,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .align(alignment = Alignment.CenterVertically)
+                                .align(alignment = Alignment.CenterVertically),
+                            shape = shapes.medium,
+                            backgroundColor  = MaterialTheme.colorScheme.secondaryContainer
                         ) {
                             FolderCard(
                                 folder = item.folder,
@@ -526,7 +553,12 @@ fun FolderCard(
     Card(modifier = modifier
         .padding(4.dp)
         .clickable { onFolderSelected(folder.id, folder.folderName) }
-        .fillMaxWidth()) {
+        .fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        colors  = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
+        ) {
         Row(modifier = Modifier
             .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -543,7 +575,7 @@ fun FolderCard(
             Text(
                 text = folder.folderName,
                 modifier = Modifier.padding(6.dp),
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleLarge
             )
         }
     }
@@ -558,10 +590,15 @@ fun CategoryCard(
 ) {
     Card(
         modifier = modifier
-            .padding(horizontal = 4.dp)
-            .padding(vertical = 12.dp)
-        , onClick = {
-        onCategorySelected(textId)}) {
+            .padding(vertical = 8.dp)
+        ,
+        shape = MaterialTheme.shapes.medium,
+        onClick = {
+        onCategorySelected(textId)},
+        colors  = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        ),
+        ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Image(painter = painterResource(id = imageId),
                 contentDescription = null,
@@ -571,7 +608,7 @@ fun CategoryCard(
                     .fillMaxWidth()
             )
             Text(text = stringResource(id = textId),
-                style = MaterialTheme.typography.headlineMedium,
+                style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(top = 8.dp, bottom = 8.dp))
         }
     }

@@ -8,11 +8,18 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
@@ -39,6 +46,7 @@ import com.example.organize3.notes.AddNoteScreen
 import com.example.organize3.notes.NotesHome
 import com.example.organize3.presentation.sign_in.GoogleAuthUiClient
 import com.example.organize3.presentation.sign_in.SignInViewModel
+import com.example.organize3.ui.theme.Organize3Theme
 import com.google.android.gms.auth.api.identity.Identity
 import kotlinx.coroutines.launch
 
@@ -55,24 +63,20 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
-            MaterialTheme {
+            Organize3Theme {
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    tonalElevation = 5.dp
                 ) {
+                    val startDestination = remember {
+                        mutableStateOf(OrganizeDestination.LoginScreen.route)
+                    }
                     val navController = rememberNavController()
                     NavHost(
                         navController = navController,
-                        startDestination = OrganizeDestination.LoginScreen.route) {
+                        startDestination = getStartDestination()) {
                         composable(route = OrganizeDestination.LoginScreen.route) {
                             val viewModel = viewModel<SignInViewModel>()
                             val state by viewModel.state.collectAsStateWithLifecycle()
-
-                            LaunchedEffect(key1 = Unit) {
-                                if (googleAuthUiClient.getSignedInUser() != null) {
-                                    navController.navigateTo(OrganizeDestination.Categories.route)
-                                }
-                            }
 
                             val launcher = rememberLauncherForActivityResult(
                                 contract = ActivityResultContracts.StartIntentSenderForResult(),
@@ -124,7 +128,13 @@ class MainActivity : ComponentActivity() {
                         }
                         // builder parameter will be defined here as the graph
                         composable(route = OrganizeDestination.Categories.route) {
-                            CategoryScreen(onItemSelected = {id ->
+                            var signOutDialogOpened by remember {
+                                mutableStateOf(false)
+                            }
+                            val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+                            val scope = rememberCoroutineScope()
+                            CategoryScreen(
+                                onItemSelected = {id ->
                                 when (id) {
                                     R.string.bank_category -> navController.navigateTo(OrganizeDestination.BankAccounts.route)
                                     R.string.application_category -> navController.navigateTo(
@@ -136,21 +146,40 @@ class MainActivity : ComponentActivity() {
                                     navController.navigateTo("${OrganizeDestination.Notes.route}/$folderId/$folderName")
                                 },
                                 userData = googleAuthUiClient.getSignedInUser(),
-                                onSignOut = {
-                                    lifecycleScope.launch {
-                                        googleAuthUiClient.sighOut()
-                                        Toast.makeText(
-                                            applicationContext,
-                                            "Successfully Signed out!",
-                                            Toast.LENGTH_LONG
-                                        ).show()
-                                        navController.navigateTo(OrganizeDestination.LoginScreen.route)
-                                    }
-                                },
+                                onSignOut = { signOutDialogOpened = true},
                                 onArchivedSelected = {
                                     navController.navigateTo(OrganizeDestination.ArchivedScreen.route)
+                                },
+                                drawerState = drawerState,
+                                closeDrawer = {
+                                    scope.launch {
+                                        drawerState.close()
+                                    }
+                                },
+                                onNavigationIconClick = {
+                                    scope.launch {
+                                        drawerState.open()
+                                    }
                                 }
                             )
+                            if (signOutDialogOpened) {
+                                DeleteConfirmationDialog(
+                                    onDeleteConfirm = {
+                                        lifecycleScope.launch {
+                                            googleAuthUiClient.sighOut()
+                                            Toast.makeText(
+                                                applicationContext,
+                                                "Successfully Signed out!",
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                            navController.navigateTo(OrganizeDestination.LoginScreen.route)
+                                        }
+                                    },
+                                    text = R.string.log_out_message,
+                                    actionText = R.string.log_out_cap,
+                                    onDeleteCancel = { signOutDialogOpened = false}
+                                )
+                            }
                         }
                         composable(route = OrganizeDestination.BankAccounts.route) {
                             AddedBankAccountScreen(
@@ -394,5 +423,11 @@ class MainActivity : ComponentActivity() {
     }
     private fun NavHostController.navigateTo(route: String) {
         this.navigate(route)
+    }
+    private fun getStartDestination(): String {
+            if (googleAuthUiClient.getSignedInUser() != null) {
+                return OrganizeDestination.Categories.route
+            }
+        return OrganizeDestination.LoginScreen.route
     }
 }

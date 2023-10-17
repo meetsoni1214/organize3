@@ -6,6 +6,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -15,9 +16,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -97,6 +101,7 @@ fun AddAppFirstRow(
     onApplicationValueChange: (ApplicationUiState) -> Unit,
     enabled: Boolean = true
 ) {
+    val focusManager = LocalFocusManager.current
     Row(modifier = modifier
         .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -107,6 +112,14 @@ fun AddAppFirstRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next,
+                ),
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.moveFocus(FocusDirection.Down)
+                }
+            ),
             singleLine = true,
             enabled = enabled,
             label = { Text(stringResource(R.string.title)) })
@@ -131,7 +144,7 @@ fun AppOtherTextFields(
     onApplicationValueChange: (ApplicationUiState) -> Unit
 ) {
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
-
+    val focusManager = LocalFocusManager.current
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -143,7 +156,14 @@ fun AppOtherTextFields(
             onValueChange = {onApplicationValueChange(applicationUiState.copy(username = it))},
             singleLine = true,
             enabled = enabled,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.moveFocus(FocusDirection.Down)
+                }
+            ),
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next,
+                keyboardType = KeyboardType.Email),
             modifier = Modifier.fillMaxWidth(),
             label = {Text(stringResource(id = R.string.facebook_login_title))}
         )
@@ -153,7 +173,14 @@ fun AppOtherTextFields(
             singleLine = true,
             enabled = enabled,
             modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.moveFocus(FocusDirection.Down)
+                }
+            ),
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next,
+                keyboardType = KeyboardType.Password),
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                            val image = if (passwordVisible) {
@@ -173,6 +200,14 @@ fun AppOtherTextFields(
             onValueChange = {onApplicationValueChange(applicationUiState.copy(remarks = it))},
             singleLine = true,
             enabled = enabled,
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next,
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.clearFocus()
+                }
+            ),
             modifier = Modifier.fillMaxWidth(),
             label = {Text(stringResource(id = R.string.remarks))}
         )

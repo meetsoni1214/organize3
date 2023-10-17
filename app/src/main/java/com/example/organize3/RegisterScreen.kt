@@ -4,6 +4,7 @@
 
 package com.example.organize3
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -48,7 +49,6 @@ fun RegisterScreen(
         modifier = modifier.fillMaxSize()
     ) { values ->
         RegisterScreenBody(modifier = Modifier
-            .verticalScroll(rememberScrollState())
             .padding(values),
             goToLoginScreen = goToLoginScreen
         )
@@ -62,39 +62,37 @@ fun RegisterScreenBody(
 ) {
     Column(
         modifier = modifier
+            .padding(top = 16.dp)
+            .padding(horizontal = 16.dp)
             .fillMaxSize(),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
             modifier = Modifier
-                .padding(
-                    vertical = 32.dp,
-                    horizontal = 16.dp
-                ),
+                .weight(0.2f),
             text = stringResource(id = R.string.register),
             style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold
         )
-        NewRegisterCard(Modifier.padding(start = 16.dp, end = 16.dp, top = 28.dp))
-        AlreadyLoginCard(
-            Modifier
-                .padding(start = 16.dp, end = 16.dp, top = 90.dp)
-            ,
-            goToLoginScreen = goToLoginScreen
-        )
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            NewRegisterCard()
+        }
+        Column {
+            AlreadyLoginCard(goToLoginScreen = goToLoginScreen)
+        }
     }
 }
 
 @Composable
-fun NewRegisterCard(
-    modifier: Modifier = Modifier
-) {
+fun NewRegisterCard() {
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
     var password by rememberSaveable { mutableStateOf("") }
     var confPassword by rememberSaveable { mutableStateOf("") }
     var isError by rememberSaveable { mutableStateOf(false) }
     Card(
-        modifier = modifier,
+        modifier = Modifier,
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Column (
@@ -190,7 +188,8 @@ fun NewRegisterCard(
                     .fillMaxWidth()
                     .clickable {}
                 ,
-                colors = CardDefaults.cardColors(containerColor = Color.Cyan)
+                border = BorderStroke(2.dp, MaterialTheme.colorScheme.outline),
+                colors = CardDefaults.cardColors(containerColor =  MaterialTheme.colorScheme.surface)
             ) {
                 Row(modifier = Modifier
                     .fillMaxWidth()
@@ -206,7 +205,7 @@ fun NewRegisterCard(
                             .size(28.dp),
                         contentDescription = stringResource(id = R.string.fb_logo))
                     Text(
-
+                        color = MaterialTheme.colorScheme.primary,
                         text = stringResource(id = R.string.continue_google),
                         style = MaterialTheme.typography.titleMedium,
                     )
@@ -219,7 +218,8 @@ fun NewRegisterCard(
                 modifier = Modifier
                     .padding(top = 8.dp)
                     .fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.Cyan)
+                border = BorderStroke(2.dp, MaterialTheme.colorScheme.outline),
+                colors = CardDefaults.cardColors(containerColor =  MaterialTheme.colorScheme.surface)
             ) {
                 Row(modifier = Modifier
                     .fillMaxWidth()
@@ -235,7 +235,7 @@ fun NewRegisterCard(
                             .size(28.dp),
                         contentDescription = stringResource(id = R.string.fb_logo))
                     Text(
-
+                        color = MaterialTheme.colorScheme.primary,
                         text = stringResource(id = R.string.continue_fb),
                         style = MaterialTheme.typography.titleMedium,
                     )
@@ -250,10 +250,9 @@ fun NewRegisterCard(
 
 @Composable
 fun AlreadyLoginCard(
-    modifier: Modifier = Modifier,
     goToLoginScreen: () -> Unit
 ) {
-    Card (modifier
+    Card (Modifier
         .fillMaxWidth()
     ){
         Row(

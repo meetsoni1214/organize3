@@ -3,6 +3,7 @@
 package com.example.organize3
 
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -61,7 +62,7 @@ fun LoginScreen(
             ){ values ->
         LoginScreenBody(
             Modifier
-                .verticalScroll(rememberScrollState())
+//                .verticalScroll(rememberScrollState())
                 .padding(values),
         goToMainScreen = goToMainScreen,
             goToRegisterScreen = goToRegisterScreen,
@@ -79,40 +80,43 @@ fun LoginScreenBody(
 ) {
     Column(
         modifier = modifier
-            .fillMaxSize(),
+            .fillMaxSize()
+            .padding(top = 16.dp)
+            .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            modifier = Modifier.padding(
-                vertical = 32.dp,
-                horizontal = 16.dp
-            ),
+            modifier = Modifier
+                .weight(0.2f)
+            ,
             text = stringResource(id = R.string.login),
             style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold,
         )
-        LoginCard(
-            Modifier.padding(start = 16.dp, end = 16.dp, top = 28.dp),
-            goToMainScreen = goToMainScreen,
-            onSignInClick = onSignInClick
-        )
-        RegisterCard(
-            Modifier.padding(start = 16.dp, end = 16.dp, top = 90.dp),
-            goToRegisterScreen = goToRegisterScreen
-        )
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            LoginCard(
+                goToMainScreen = goToMainScreen,
+                onSignInClick = onSignInClick
+            )
+        }
+        Column{
+            RegisterCard(
+                goToRegisterScreen = goToRegisterScreen
+            )
+        }
     }
 }
 
 @Composable
 fun LoginCard(
-    modifier: Modifier = Modifier,
     onSignInClick: () -> Unit,
     goToMainScreen: () -> Unit,
 ) {
     var passwordVisible by rememberSaveable { mutableStateOf(false)}
     var password by rememberSaveable { mutableStateOf("") }
     Card(
-        modifier = modifier,
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Column (
@@ -182,7 +186,8 @@ fun LoginCard(
                         onSignInClick()
                     }
                 ,
-                colors = CardDefaults.cardColors(containerColor = Color.Cyan)
+                border = BorderStroke(2.dp, MaterialTheme.colorScheme.outline),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
                 Row(modifier = Modifier
                     .fillMaxWidth()
@@ -198,8 +203,8 @@ fun LoginCard(
                             .size(28.dp),
                         contentDescription = stringResource(id = R.string.fb_logo))
                     Text(
-
                         text = stringResource(id = R.string.continue_google),
+                        color = MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.titleMedium,
                     )
                     Icon(
@@ -211,7 +216,8 @@ fun LoginCard(
                 modifier = Modifier
                     .padding(top = 8.dp)
                     .fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.Cyan)
+                border = BorderStroke(2.dp, MaterialTheme.colorScheme.outline),
+                colors = CardDefaults.cardColors(containerColor =  MaterialTheme.colorScheme.surface)
             ) {
                 Row(modifier = Modifier
                     .fillMaxWidth()
@@ -227,7 +233,7 @@ fun LoginCard(
                             .size(28.dp),
                         contentDescription = stringResource(id = R.string.fb_logo))
                     Text(
-
+                        color = MaterialTheme.colorScheme.primary,
                         text = stringResource(id = R.string.continue_fb),
                         style = MaterialTheme.typography.titleMedium,
                     )
@@ -242,10 +248,9 @@ fun LoginCard(
 
 @Composable
 fun RegisterCard(
-    modifier: Modifier = Modifier,
     goToRegisterScreen: () -> Unit
 ) {
-    Card (modifier.fillMaxWidth()){
+    Card (Modifier.fillMaxWidth()){
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier

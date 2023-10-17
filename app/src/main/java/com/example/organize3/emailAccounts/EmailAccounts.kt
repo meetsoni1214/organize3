@@ -39,12 +39,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.organize3.AppViewModelProvider
@@ -52,6 +54,7 @@ import com.example.organize3.OrganizeTopAppBar
 import com.example.organize3.R
 import com.example.organize3.archived.CardType
 import com.example.organize3.data.email.EmailAccount
+import com.example.organize3.ui.theme.shapes
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,14 +68,17 @@ fun AddedEmailAccountsScreen(
     viewModel: EmailHomeViewModel = viewModel(factory = AppViewModelProvider.Factory)) {
     val emailHomeUiState by viewModel.emailHomeUiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
-    val scaffoldState = rememberScaffoldState()
     val searchQuery by viewModel.searchText.collectAsState()
     val emailAccounts by viewModel.emailAccounts.collectAsState()
     val isSearching by viewModel.isSearching.collectAsState()
     Scaffold (
-        scaffoldState = scaffoldState,
         floatingActionButton = {
-            FloatingActionButton(onClick = onAddEmail) {
+            FloatingActionButton(
+                onClick = onAddEmail,
+                shape = MaterialTheme.shapes.medium,
+                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+            ) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = null)
             }
         },
@@ -93,16 +99,16 @@ fun AddedEmailAccountsScreen(
             deleteEmail = { emailAccount ->
                 coroutineScope.launch {
                     viewModel.archiveEmail(emailAccount)
-                    val snackbarResult = scaffoldState.snackbarHostState.showSnackbar(
-                        message = "Item moved to Archived!",
-                        actionLabel = "Undo"
-                    )
-                    when (snackbarResult) {
-                        SnackbarResult.Dismissed -> Log.d("SnackbarDemo", "Dismissed")
-                        SnackbarResult.ActionPerformed -> {
-                            viewModel.undoArchiveEmail(emailAccount)
-                        }
-                    }
+//                    val snackbarResult = scaffoldState.snackbarHostState.showSnackbar(
+//                        message = "Item moved to Archived!",
+//                        actionLabel = "Undo"
+//                    )
+//                    when (snackbarResult) {
+//                        SnackbarResult.Dismissed -> Log.d("SnackbarDemo", "Dismissed")
+//                        SnackbarResult.ActionPerformed -> {
+//                            viewModel.undoArchiveEmail(emailAccount)
+//                        }
+//                    }
                 }
             },
             isSearching = isSearching
@@ -122,6 +128,7 @@ fun EmailScreen(
     deleteEmail: (EmailAccount) -> Unit
 ) {
     EmailList(
+        modifier = modifier,
         onEmailClick = {onEmailClick(it.id, 0)},
         searchQuery = searchQuery,
         onValueChanged = onValueChanged,
@@ -153,7 +160,7 @@ fun EmailList(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(horizontal = 16.dp)
     ) {
        SearchField(
            value = searchQuery,
@@ -161,7 +168,7 @@ fun EmailList(
            modifier = Modifier
                .fillMaxWidth()
                .clip(RoundedCornerShape(100))
-               .background(Color.LightGray)
+               .background(MaterialTheme.colorScheme.surfaceVariant)
                .onFocusChanged {
                    isHintDisplayed = !(it.hasFocus)
                }
@@ -182,7 +189,9 @@ fun EmailList(
                 }
             }
         }else {
-                LazyColumn(modifier = Modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                LazyColumn(
+                    modifier = Modifier,
+                    verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     items(items = emailList, key = { it.id}) { email ->
                         val dismissState = rememberDismissState()
 
@@ -202,9 +211,9 @@ fun EmailList(
                             background = {
                                 val color by animateColorAsState(
                                     when (dismissState.targetValue) {
-                                        DismissValue.Default -> Color.White
+                                        DismissValue.Default -> MaterialTheme.colorScheme.surfaceColorAtElevation(5.dp)
                                         else -> Color.Green
-                                    }
+                                    },
                                 )
                                 val alignment = Alignment.CenterEnd
                                 val icon = R.drawable.ic_archived
@@ -231,6 +240,8 @@ fun EmailList(
                                     elevation = animateDpAsState(
                                         if (dismissState.dismissDirection != null) 4.dp else 0.dp
                                     ).value,
+                                    backgroundColor  = MaterialTheme.colorScheme.secondaryContainer,
+                                    shape = shapes.medium,
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .align(alignment = Alignment.CenterVertically)
@@ -255,7 +266,10 @@ public fun SearchField(
     isHintDisplayed: Boolean,
     modifier: Modifier = Modifier,
     hintText: String = "",
-    textStyle: TextStyle = MaterialTheme.typography.bodyMedium,
+    textStyle: TextStyle = TextStyle(
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        fontSize = TextUnit.Unspecified
+    ),
     maxLines: Int = 1
 ) {
    BasicTextField(
@@ -263,6 +277,7 @@ public fun SearchField(
        onValueChange = onValueChanged,
        textStyle = textStyle,
        maxLines = maxLines,
+       cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurfaceVariant),
        decorationBox = { innerTextField ->
            Box(
                modifier = modifier
@@ -275,11 +290,12 @@ public fun SearchField(
                    ) {
                        Icon(
                            imageVector = Icons.Default.Search,
+                           tint = MaterialTheme.colorScheme.onSurfaceVariant,
                            contentDescription = stringResource(id = R.string.search))
                        Spacer(modifier = Modifier.width(12.dp))
                        Text(
                            text = hintText,
-                           color = androidx.compose.material.LocalContentColor.current.copy(alpha = ContentAlpha.medium)
+                           color = MaterialTheme.colorScheme.onSurfaceVariant,
                        )
                    }
                }
@@ -298,7 +314,12 @@ fun EmailAccountCard(
     Card(modifier = modifier
         .padding(4.dp)
         .clickable { onEmailClick(email) }
-        .fillMaxWidth()) {
+        .fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        colors  = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
+    ) {
         Row(modifier = Modifier
             .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically) {
@@ -314,7 +335,7 @@ fun EmailAccountCard(
             Text(
                 text = email.accountTitle,
                 modifier = Modifier.padding(8.dp),
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleLarge
             )
         }
     }

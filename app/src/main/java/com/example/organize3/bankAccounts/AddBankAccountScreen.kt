@@ -36,7 +36,7 @@ import com.example.organize3.OrganizeTopAppBar
 import com.example.organize3.R
 import com.example.organize3.model.Bank
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun AddBankAccountScreen(
     modifier: Modifier = Modifier,

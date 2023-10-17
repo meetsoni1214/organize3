@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -47,6 +48,7 @@ import com.example.organize3.OrganizeTopAppBar
 import com.example.organize3.data.folderWithNotes.Note
 import com.example.organize3.R
 import com.example.organize3.emailAccounts.SearchField
+import com.example.organize3.ui.theme.shapes
 import kotlinx.coroutines.launch
 import androidx.compose.material.Card as Card1
 
@@ -63,7 +65,6 @@ fun NotesHome(
 //    val folderUiState by viewModel.folder.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     val folderId = viewModel.folderId
-    val scaffoldState = rememberScaffoldState()
     val isSearching by viewModel.isSearching.collectAsState()
     val searchQuery by viewModel.searchText.collectAsState()
     val notes by viewModel.notes.collectAsState()
@@ -71,11 +72,16 @@ fun NotesHome(
 
     Scaffold (
         floatingActionButton = {
-            FloatingActionButton(onClick = {onAddNote(viewModel.folderId, -1, 0)}) {
+            FloatingActionButton(
+                onClick = {onAddNote(viewModel.folderId, -1, 0)
+                },
+                shape = MaterialTheme.shapes.medium,
+                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                ) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = null)
             }
         },
-        scaffoldState = scaffoldState,
         topBar = {
             OrganizeTopAppBar(
                 title = viewModel.folderName,
@@ -103,17 +109,17 @@ fun NotesHome(
                 coroutineScope.launch {
                     viewModel.archiveNote(note)
                 }
-                coroutineScope.launch {
-                    val snackBarResult = scaffoldState.snackbarHostState.showSnackbar(
-                        message = "Item moved to archive!",
-                        actionLabel = "Undo"
-                    )
-                    when (snackBarResult) {
-                        SnackbarResult.Dismissed -> Log.d("SnackBarDemo", "Dismissed")
-                        SnackbarResult.ActionPerformed -> {
-                        }
-                    }
-                }
+//                coroutineScope.launch {
+//                    val snackBarResult = scaffoldState.snackbarHostState.showSnackbar(
+//                        message = "Item moved to archive!",
+//                        actionLabel = "Undo"
+//                    )
+//                    when (snackBarResult) {
+//                        SnackbarResult.Dismissed -> Log.d("SnackBarDemo", "Dismissed")
+//                        SnackbarResult.ActionPerformed -> {
+//                        }
+//                    }
+//                }
             },
             isSearching = isSearching,
             searchQuery = searchQuery,
@@ -140,6 +146,7 @@ fun NotesScreen(
     ) {
 
             NotesList(
+                modifier = modifier,
                 onNoteClick = { onNoteClick(folderId, it.id, 0) },
                 deleteNote = deleteNote,
                 notesList = notesList,
@@ -173,7 +180,7 @@ fun NotesList(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(horizontal = 16.dp)
     ) {
         SearchField(
             value = searchQuery,
@@ -181,7 +188,7 @@ fun NotesList(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(100))
-                .background(Color.LightGray)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
                 .onFocusChanged {
                     isHintDisplayed = !(it.hasFocus)
                 }
@@ -204,8 +211,7 @@ fun NotesList(
             }
         }else {
             LazyColumn(
-                modifier = modifier,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 items(items = notesList, key = {it.id}) { note ->
                     val dismissState = rememberDismissState()
@@ -226,7 +232,7 @@ fun NotesList(
                         background = {
                             val color by animateColorAsState(
                                 when (dismissState.targetValue) {
-                                    DismissValue.Default -> Color.White
+                                    DismissValue.Default -> MaterialTheme.colorScheme.surfaceColorAtElevation(5.dp)
                                     else -> Color.Green
                                 }
                             )
@@ -254,9 +260,11 @@ fun NotesList(
                                 elevation = animateDpAsState(
                                     if (dismissState.dismissDirection != null) 4.dp else 0.dp
                                 ).value,
+                                shape = shapes.medium,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .align(alignment = Alignment.CenterVertically)
+                                    .align(alignment = Alignment.CenterVertically),
+                                backgroundColor  = MaterialTheme.colorScheme.secondaryContainer
                             ) {
                                 NoteCard(onNoteClick = onNoteClick,
                                     note = note,
@@ -275,6 +283,7 @@ fun NotesList(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NoteCard(
     modifier: Modifier = Modifier,
@@ -302,8 +311,11 @@ fun NoteCard(
                     isSelected = true
                 }
             )
-
-            .fillMaxWidth()
+            .fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        colors  = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
     ){
         Row(
             modifier = Modifier
@@ -334,7 +346,10 @@ fun NoteCard(
                             .padding(4.dp)
                             .padding(top = 4.dp)
                         ,
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                     Text(
                         text = note.noteContent,
@@ -342,7 +357,7 @@ fun NoteCard(
                             .padding(4.dp)
                             .padding(end = 4.dp, bottom = 4.dp)
                         ,
-                        style = MaterialTheme.typography.labelMedium,
+                        style = MaterialTheme.typography.bodyMedium,
                         overflow = TextOverflow.Ellipsis,
                         maxLines = 5
                     )

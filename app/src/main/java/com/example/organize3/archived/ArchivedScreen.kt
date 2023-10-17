@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -145,7 +146,11 @@ fun ArchivedNoteCard(
             .clickable {
                 onCardClick(note.folderId, note.id, note.isArchived, cardType)
             }
-            .fillMaxWidth()
+            .fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        colors  = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
     ) {
         Row(
             modifier =  Modifier
@@ -176,14 +181,14 @@ fun ArchivedNoteCard(
                         modifier = Modifier
                             .padding(4.dp)
                             .padding(top = 4.dp),
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.titleLarge,
                     )
                     Text(
                         text = note.noteContent,
                         modifier = Modifier
                             .padding(4.dp)
                             .padding(end = 4.dp, bottom = 4.dp),
-                        style = MaterialTheme.typography.labelMedium,
+                        style = MaterialTheme.typography.bodyMedium,
                         overflow = TextOverflow.Ellipsis,
                         maxLines = 5
                     )
@@ -206,7 +211,11 @@ fun ArchiveBankAccountCard(
             .clickable {
                 onCardClick(0, bankAccount.id, 1, cardType)
             }
-            .padding(4.dp)
+            .padding(4.dp),
+        shape = MaterialTheme.shapes.medium,
+        colors  = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
     ) {
         Row(
             modifier = Modifier
@@ -231,14 +240,14 @@ fun ArchiveBankAccountCard(
                     text = bankAccount.bankName,
                     modifier = Modifier
                         .padding(start = 8.dp, top = 12.dp),
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = bankAccount.accountHolderName,
                     modifier = Modifier
                         .padding(start = 8.dp, bottom = 12.dp),
-                    style = MaterialTheme.typography.labelLarge
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
         }
@@ -278,7 +287,7 @@ fun ArchivedCard(
             Text(
                 text = title,
                 modifier = Modifier.padding(8.dp),
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleLarge
             )
         }
     }

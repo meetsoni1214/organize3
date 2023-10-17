@@ -566,12 +566,12 @@ fun DeleteConfirmationDialog(
         text = { Text(text = stringResource(id = text))},
         modifier = modifier.padding(16.dp),
         dismissButton = {
-            TextButton(onClick = onDeleteCancel) {
+            OutlinedButton(onClick = onDeleteCancel) {
                 Text(text = stringResource(id = R.string.cancel))
             }
         },
         confirmButton = {
-            TextButton(onClick = onDeleteConfirm) {
+            Button(onClick = onDeleteConfirm) {
                 Text(text = stringResource(id = actionText))
             }
         }

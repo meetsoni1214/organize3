@@ -46,6 +46,7 @@ import com.example.organize3.OrganizeTopAppBar
 import com.example.organize3.R
 import com.example.organize3.data.bankAccount.BankAccount
 import com.example.organize3.emailAccounts.SearchField
+import com.example.organize3.ui.theme.shapes
 import kotlinx.coroutines.launch
 
 @Composable
@@ -59,14 +60,17 @@ fun AddedBankAccountScreen(
 ) {
     val bankAccountHomeUiState by viewModel.bankAccountHomeUiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
-    val scaffoldState = rememberScaffoldState()
     val bankAccounts by viewModel.bankAccounts.collectAsState()
     val isSearching by viewModel.isSearching.collectAsState()
     val searchQuery by viewModel.searchText.collectAsState()
     Scaffold(
-        scaffoldState = scaffoldState,
         floatingActionButton = {
-            FloatingActionButton(onClick = { onAddAccount() }) {
+            FloatingActionButton(
+                onClick = { onAddAccount() },
+                shape = MaterialTheme.shapes.medium,
+                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+            ) {
                 Icon(imageVector = Icons.Default.Add,
                     contentDescription = null)
             }
@@ -79,25 +83,26 @@ fun AddedBankAccountScreen(
         )
     }) { values -> 
         BankAccountScreen(
-            modifier.padding(values),
+            modifier
+                .padding(values),
             goToBankAccountScreen = goToBankAccountScreen,
             bankAccountList = bankAccounts,
             deleteAccount = {bankAccount ->
                 coroutineScope.launch {
                     viewModel.archiveBankAccount(bankAccount)
                 }
-                coroutineScope.launch {
-                    val snackbarResult = scaffoldState.snackbarHostState.showSnackbar(
-                        message = "Item deleted!",
-                        actionLabel = "Undo"
-                    )
-                    when (snackbarResult) {
-                        SnackbarResult.Dismissed -> Log.d("SnackbarDemo", "Dismissed")
-                        SnackbarResult.ActionPerformed -> {
-
-                        }
-                    }
-                }
+//                coroutineScope.launch {
+//                    val snackbarResult = scaffoldState.snackbarHostState.showSnackbar(
+//                        message = "Item deleted!",
+//                        actionLabel = "Undo"
+//                    )
+//                    when (snackbarResult) {
+//                        SnackbarResult.Dismissed -> Log.d("SnackbarDemo", "Dismissed")
+//                        SnackbarResult.ActionPerformed -> {
+//
+//                        }
+//                    }
+//                }
             },
             isSearching = isSearching,
             searchQuery = searchQuery,
@@ -119,6 +124,7 @@ fun BankAccountScreen(
     bankAccountList: List<BankAccount>
 ) {
             BankAccountList(
+                modifier = modifier,
                 bankAccountList = bankAccountList,
                 goToBankAccountScreen = goToBankAccountScreen,
                 deleteAccount = deleteAccount,
@@ -147,7 +153,7 @@ fun BankAccountList(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(horizontal = 16.dp)
     ) {
         SearchField(
             value = searchQuery,
@@ -155,7 +161,7 @@ fun BankAccountList(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(100))
-                .background(Color.LightGray)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
                 .onFocusChanged {
                     isHintDisplayed = !(it.hasFocus)
                 }
@@ -177,7 +183,7 @@ fun BankAccountList(
                 }
             }
         }else {
-            LazyColumn(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            LazyColumn(modifier = Modifier, verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 items(items = bankAccountList, key = {it.id}) {bankAccount ->
                     val dismissState = rememberDismissState()
 
@@ -198,7 +204,7 @@ fun BankAccountList(
                         background = {
                             val color by animateColorAsState(
                                 when (dismissState.targetValue) {
-                                    DismissValue.Default -> Color.White
+                                    DismissValue.Default -> MaterialTheme.colorScheme.surfaceColorAtElevation(5.dp)
                                     else -> Color.Green
                                 }
                             )
@@ -228,6 +234,8 @@ fun BankAccountList(
                                 elevation = animateDpAsState(
                                     if (dismissState.dismissDirection != null) 4.dp else 0.dp
                                 ).value,
+                                shape = shapes.medium,
+                                backgroundColor  = MaterialTheme.colorScheme.secondaryContainer,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .align(alignment = Alignment.CenterVertically)
@@ -254,7 +262,12 @@ fun BankAccountCard(
     Card(modifier = modifier
         .fillMaxWidth()
         .clickable { goToBankAccountScreen(bankAccount.id, 0) }
-        .padding(4.dp)) {
+        .padding(4.dp),
+        shape = MaterialTheme.shapes.medium,
+        colors  = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
+    ) {
         Row(
             modifier = Modifier
                 .padding(end = 6.dp)
@@ -279,14 +292,14 @@ fun BankAccountCard(
                     text = bankAccount.bankName,
                     modifier = Modifier
                         .padding(start = 8.dp, top = 12.dp),
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = bankAccount.accountHolderName,
                     modifier = Modifier
                         .padding(start = 8.dp, bottom = 12.dp),
-                    style = MaterialTheme.typography.labelLarge
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
         }

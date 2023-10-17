@@ -36,14 +36,11 @@ fun EmailDetailScreen(
     goToEditScreen:(Int) -> Unit,
     viewModel: EmailAccountDetailViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
-    val deletedText = stringResource(id = R.string.email_account_deleted)
-    var showSnackbar by remember { mutableStateOf(false) }
     val uiState = viewModel.uiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     val isArchived = viewModel.isArchived
     val scaffoldState: ScaffoldState = rememberScaffoldState()
-    androidx.compose.material.Scaffold (
-        scaffoldState = scaffoldState,
+    Scaffold (
         topBar = {
                 OrganizeTopAppBar(
                     title = stringResource(id = R.string.email_account_details),
@@ -75,7 +72,6 @@ fun EmailDetailScreen(
                         coroutineScope.launch {
                             viewModel.archiveEmail()
                             navigateBack()
-                            showSnackbar = true
                         }
                     },
                     duplicateEmail = {
@@ -89,6 +85,9 @@ fun EmailDetailScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { goToEditScreen(uiState.value.id) },
+                shape = MaterialTheme.shapes.medium,
+                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
                 modifier = Modifier.navigationBarsPadding()
             ) {
                 Icon(imageVector = Icons.Default.Edit, contentDescription = stringResource(id = R.string.edit_email_account))
@@ -99,13 +98,6 @@ fun EmailDetailScreen(
             emailUiState = uiState.value,
             modifier = modifier.padding(innerPadding)
         )
-
-        if (showSnackbar) {
-            LaunchedEffect(scaffoldState, deletedText) {
-                scaffoldState.snackbarHostState.showSnackbar(deletedText)
-                showSnackbar = false
-            }
-        }
     }
 }
 
