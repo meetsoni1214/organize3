@@ -287,6 +287,7 @@ fun DrawerMenuInsideItem(
     },
 ) {
     val modifiedText = if (isFolderSelected) folderName else stringResource(id = text)
+
         Row(
             modifier = modifier
                 .fillMaxWidth()

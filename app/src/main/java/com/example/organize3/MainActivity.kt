@@ -84,7 +84,12 @@ class MainActivity : ComponentActivity() {
                                     if (result.resultCode == RESULT_OK) {
                                         lifecycleScope.launch {
                                             val signInResult = googleAuthUiClient.signInWithIntent(
-                                                intent = result.data ?: return@launch
+                                                intent = result.data ?: return@launch,
+                                                onSuccessfulFirebaseSignIn = { tokenId ->
+                                                    viewModel.signInWithMongAtlas(
+                                                        tokenId = tokenId,
+                                                    )
+                                                }
                                             )
                                             viewModel.onSignInResult(signInResult)
                                         }

@@ -4,6 +4,7 @@ plugins {
     id 'com.google.devtools.ksp' version "1.7.21-1.0.8"
     id 'kotlin-kapt'
     id 'com.google.dagger.hilt.android'
+    id 'io.realm.kotlin'
     id "com.ncorti.ktfmt.gradle" version "0.10.0"
 
 
@@ -13,12 +14,15 @@ plugins {
 
 android {
     namespace 'com.example.organize3'
-    compileSdk 33
+//    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.example.organize3"
-        minSdk 22
-        targetSdk 33
+//        minSdk 22
+        minSdk 21
+//        targetSdk 33
+        targetSdk 34
         versionCode 1
         versionName "1.0"
 
@@ -36,10 +40,13 @@ android {
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
+//        sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_1_8
+//        targetCompatibility JavaVersion.VERSION_17
     }
     kotlinOptions {
         jvmTarget = '1.8'
+//        jvmTarget = '17'
     }
     buildFeatures {
         compose true
@@ -93,6 +100,10 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.3.0")
 
     implementation 'com.google.code.gson:gson:2.8.9'
+
+    // Mongo DB Realm
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4"
+    implementation "io.realm.kotlin:library-sync:1.8.0"
 
 
     testImplementation 'junit:junit:4.13.2'
