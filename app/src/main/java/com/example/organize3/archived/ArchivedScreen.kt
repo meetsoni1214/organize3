@@ -43,7 +43,7 @@ fun ArchivedScreen(
     onCardClick: (Int, Int, Int, CardType) -> Unit,
     viewModel: ArchivedHomeViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
-    val emailArchivedHomeUiState by viewModel.emailArchivedState.collectAsState()
+//    val emailArchivedHomeUiState by viewModel.emailArchivedState.collectAsState()
     val applicationArchivedHomeUiState by viewModel.applicationArchivedState.collectAsState()
     val bankAccountArchivedHomeUiState by viewModel.bankAccountArchivedState.collectAsState()
     val noteArchivedHomeUiState by viewModel.noteArchivedState.collectAsState()
@@ -59,7 +59,7 @@ fun ArchivedScreen(
     ) { values ->
         ArchivedScreenBody(
             modifier = modifier.padding(values),
-            emailList = emailArchivedHomeUiState.emailList,
+//            emailList = emailArchivedHomeUiState.emailList,
             applicationList = applicationArchivedHomeUiState.applicationList,
             bankAccountList = bankAccountArchivedHomeUiState.bankAccountList,
             notesList = noteArchivedHomeUiState.notesList,
@@ -71,7 +71,7 @@ fun ArchivedScreen(
 @Composable
 fun ArchivedScreenBody(
     modifier: Modifier = Modifier,
-    emailList: List<EmailAccount>,
+//    emailList: List<EmailAccount>,
     applicationList: List<ApplicationAccount>,
     bankAccountList: List<BankAccount>,
     notesList: List<Note>,
@@ -108,16 +108,16 @@ fun ArchivedScreenBody(
             )
         }
 
-        items(items = emailList, key = { it.id}) {email ->
-            ArchivedCard(
-                imageRes = R.drawable.email_icon,
-                contentDes = stringResource(id = R.string.email_icon),
-                title = email.accountTitle,
-                onCardClick = onCardClick,
-                cardId = email.id,
-                cardType = CardType.EmailAccountCard
-            )
-        }
+//        items(items = emailList, key = { it._id}) {email ->
+//            ArchivedCard(
+//                imageRes = R.drawable.email_icon,
+//                contentDes = stringResource(id = R.string.email_icon),
+//                title = email.title,
+//                onCardClick = onCardClick,
+//                cardId = email._id.timestamp,
+//                cardType = CardType.EmailAccountCard
+//            )
+//        }
 //        items(items = bankAccountList, key = {it.id}) { bankAccount ->
 //            ArchiveBankAccountCard(
 //                onCardClick = onCardClick,

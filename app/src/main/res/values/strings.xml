@@ -8,6 +8,7 @@
     <string name="category_screen_text_bank">You haven\'t added any Bank Accounts yet, click on the + button to add your first Card ;)</string>
     <string name="category_screen_text_application">You haven\'t added any Applications Account yet, click on the + button to add your first Card ;)</string>
     <string name="category_screen_text_email">You haven\'t added any Email Accounts yet, click on the + button to add your first Card ;)</string>
+    <string name="add_card">click on the + button to add your first Card ;)</string>
     <string name="no_notes_added_message">You haven\'t added any Notes yet, click on the + button to add your first Note ;)</string>
     <string name="add_bank_account">Add Bank Account Details</string>
     <string name="bank_account_details">Bank Account Details</string>
@@ -22,6 +23,7 @@
     <string name="enter_extra_details">Add extra Details</string>
     <string name="card_details_question">Do you use ATM card with this bank Account?</string>
     <string name="card_no_error">Card Number should not be more than 16 digits</string>
+    <string name="empty_fields">Fields cannot be empty.</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="saving">Saving</string>
@@ -76,6 +78,7 @@
     <string name="archive">Archive</string>
     <string name="archive_confirm_email">On deleting the details it will moved to Archived.</string>
     <string name="delete_folder_confirm">Are you sure you want to delete the Folder?</string>
+    <string name="no_email_found">Email Accounts are Empty</string>
     <string name="delete_details_confirm">Are you sure you want to delete the details? It will be deleted permanently.</string>
     <string name="email_account_details">Email Account Details</string>
     <string name="edit_email_account">Edit Email Account Details</string>

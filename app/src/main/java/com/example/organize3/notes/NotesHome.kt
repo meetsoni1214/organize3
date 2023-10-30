@@ -5,7 +5,6 @@
 
 package com.example.organize3.notes
 
-import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -18,10 +17,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.DismissDirection
 import androidx.compose.material.DismissValue
-import androidx.compose.material.SnackbarResult
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -47,7 +44,7 @@ import com.example.organize3.AppViewModelProvider
 import com.example.organize3.OrganizeTopAppBar
 import com.example.organize3.data.folderWithNotes.Note
 import com.example.organize3.R
-import com.example.organize3.emailAccounts.SearchField
+import com.example.organize3.emailAccounts.home.SearchField
 import com.example.organize3.ui.theme.shapes
 import kotlinx.coroutines.launch
 import androidx.compose.material.Card as Card1

@@ -15,10 +15,7 @@ import com.example.organize3.bankAccounts.BankAccountDetailViewModel
 import com.example.organize3.bankAccounts.BankAccountEditViewModel
 import com.example.organize3.bankAccounts.BankAccountEntryViewModel
 import com.example.organize3.bankAccounts.BankAccountHomeViewModel
-import com.example.organize3.emailAccounts.EmailAccountDetailViewModel
-import com.example.organize3.emailAccounts.EmailEditViewModel
-import com.example.organize3.emailAccounts.EmailEntryViewModel
-import com.example.organize3.emailAccounts.EmailHomeViewModel
+
 import com.example.organize3.folder.FolderHomeViewModel
 import com.example.organize3.notes.NoteEntryViewModel
 import com.example.organize3.notes.NotesHomeViewModel
@@ -29,28 +26,7 @@ import com.example.organize3.notes.NotesHomeViewModel
  */
 object AppViewModelProvider {
     val Factory = viewModelFactory {
-        // Initializer for EmailEntryViewModel
-        initializer {
-            EmailEntryViewModel(organizeApplication().container.emailRepository)
-        }
-        // Initializer for EmailHomeViewModel
-        initializer {
-            EmailHomeViewModel(organizeApplication().container.emailRepository)
-        }
-        // Initializer for EmailAccountDetailViewModel
-        initializer {
-            EmailAccountDetailViewModel(
-                this.createSavedStateHandle(),
-                organizeApplication().container.emailRepository
-            )
-        }
-        // Initializer for ItemEditViewModel
-        initializer {
-            EmailEditViewModel(
-                this.createSavedStateHandle(),
-                organizeApplication().container.emailRepository
-            )
-        }
+
         // Initializer for ApplicationViewModel
         initializer {
             ApplicationViewModel(
@@ -128,7 +104,7 @@ object AppViewModelProvider {
         // Initializer for ArchivedHomeViewModel
         initializer {
             ArchivedHomeViewModel(
-                emailRepository = organizeApplication().container.emailRepository,
+//                emailRepository = organizeApplication().container.emailRepository,
                 notesRepository = organizeApplication().container.folderWithNotesRepository,
                 applicationRepository = organizeApplication().container.applicationRepository,
                 bankAccountRepository =  organizeApplication().container.bankAccountRepository

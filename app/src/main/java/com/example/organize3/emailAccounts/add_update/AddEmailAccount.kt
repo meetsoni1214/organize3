@@ -1,7 +1,8 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.example.organize3.emailAccounts
+package com.example.organize3.emailAccounts.add_update
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -17,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -26,11 +28,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import com.example.organize3.R
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.organize3.AppViewModelProvider
 import com.example.organize3.OrganizeTopAppBar
-import com.example.organize3.appUi.EmailUiState
-import kotlinx.coroutines.launch
+import com.example.organize3.data.email.EmailAccount
 
 
 @Composable
@@ -38,28 +37,35 @@ fun AddEmailAccountScreen(
     modifier: Modifier = Modifier,
     canNavigateBack: Boolean = true,
     onNavigateUp:() -> Unit,
-    navigateBack: () -> Unit,
-    viewModel: EmailEntryViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    uiState: EmailUiState,
+    onTitleChanged: (String) -> Unit,
+    onEmailChanged: (String) -> Unit,
+    onPasswordChanged: (String) -> Unit,
+    onRemarksChanged: (String) -> Unit,
+    onSaveClick: (EmailAccount) -> Unit,
+    navigateBack: () -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
     Scaffold(
         topBar = {
             OrganizeTopAppBar(
-                title = stringResource(id = R.string.enter_bank_details),
+                title = if (uiState.selectedEmailId != null) stringResource(id = R.string.edit_email_account) else stringResource(id = R.string.enter_bank_details) ,
                 canNavigateBack = canNavigateBack,
-                navigateUp = onNavigateUp)
+                navigateUp = onNavigateUp,
+            )
         }
     ) { innerPadding ->
         EmailEntryBody(
-            emailUiState = viewModel.emailUiState,
-            onEmailValueChange = viewModel::updateUiState,
-            onSaveClick = {
-                coroutineScope.launch {
-                    viewModel.saveEmail()
-                }
-                navigateBack()
-            },
+            emailUiState = uiState,
+            onTitleChanged = onTitleChanged,
+            onEmailChanged = onEmailChanged,
+            onRemarksChanged = onRemarksChanged,
+            onPasswordChanged = onPasswordChanged,
+            onSaveClick = onSaveClick,
             modifier = modifier.padding(innerPadding)
+        )
+        Box(
+            modifier = Modifier.padding(innerPadding)
         )
     }
 }
@@ -67,19 +73,46 @@ fun AddEmailAccountScreen(
 @Composable
 fun EmailEntryBody(
     emailUiState: EmailUiState,
-    onEmailValueChange: (EmailUiState) -> Unit,
-    onSaveClick: () -> Unit,
+    onTitleChanged: (String) -> Unit,
+    onEmailChanged: (String) -> Unit,
+    onPasswordChanged: (String) -> Unit,
+    onRemarksChanged: (String) -> Unit,
+    onSaveClick: (EmailAccount) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     Column(modifier = modifier
         .fillMaxWidth()
         .padding(20.dp)
         .verticalScroll(rememberScrollState())) {
-        FirstRow(emailUiState = emailUiState, onEmailValueChange = onEmailValueChange)
-        OtherTextFields(emailUiState = emailUiState, onEmailValueChange = onEmailValueChange)
+        FirstRow(title = emailUiState.title, onTitleChanged = onTitleChanged)
+        OtherTextFields(
+            email = emailUiState.email,
+            onEmailChanged = onEmailChanged,
+            password = emailUiState.password,
+            onPasswordChanged = onPasswordChanged,
+            remarks = emailUiState.remarks,
+            onRemarksChanged = onRemarksChanged)
         Button(
-            onClick = onSaveClick,
-            enabled = emailUiState.actionEnabled,
+            onClick = {
+                      if (emailUiState.title.isNotEmpty() && emailUiState.email.isNotEmpty()) {
+                          onSaveClick(
+                              EmailAccount().apply {
+                                  this.title = emailUiState.title
+                                  this.email = emailUiState.email
+                                  this.password = emailUiState.password
+                                  this.remarks = emailUiState.remarks
+                              }
+                          )
+                      } else {
+                          Toast.makeText(
+                              context,
+                              "Fields cannot be empty.",
+                              Toast.LENGTH_SHORT
+                          ).show()
+                      }
+                      },
+            enabled = true,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = stringResource(id = R.string.save_details))
@@ -90,8 +123,12 @@ fun EmailEntryBody(
 @Composable
 fun OtherTextFields(
     modifier: Modifier = Modifier,
-    emailUiState: EmailUiState,
-    onEmailValueChange: (EmailUiState) -> Unit = {},
+    email: String,
+    onEmailChanged: (String) -> Unit,
+    password: String,
+    onPasswordChanged: (String) -> Unit,
+    remarks: String,
+    onRemarksChanged: (String) -> Unit,
     enabled: Boolean = true
     ) {
     val focusManager = LocalFocusManager.current
@@ -101,8 +138,8 @@ fun OtherTextFields(
         .padding(vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)) {
         OutlinedTextField(
-            value = emailUiState.email,
-            onValueChange = { onEmailValueChange(emailUiState.copy(email = it))},
+            value = email,
+            onValueChange = { onEmailChanged(it)},
             modifier = Modifier
                 .fillMaxWidth(),
             singleLine = true,
@@ -117,8 +154,8 @@ fun OtherTextFields(
                 keyboardType = KeyboardType.Email),
             label = { Text(stringResource(R.string.email_id)) })
         OutlinedTextField(
-            value = emailUiState.password,
-            onValueChange = { onEmailValueChange(emailUiState.copy(password = it))},
+            value = password,
+            onValueChange = { onPasswordChanged(it)},
             modifier = Modifier
                 .fillMaxWidth(),
             singleLine = true,
@@ -145,7 +182,7 @@ fun OtherTextFields(
                            },
             label = { Text(stringResource(R.string.password)) })
         OutlinedTextField(
-            value = emailUiState.remarks,
+            value = remarks,
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Next,
             ),
@@ -154,7 +191,7 @@ fun OtherTextFields(
                     focusManager.clearFocus()
                 }
             ),
-            onValueChange = {onEmailValueChange(emailUiState.copy(remarks = it))},
+            onValueChange = {onRemarksChanged(it)},
             modifier = Modifier
                 .fillMaxWidth(),
             singleLine = true,
@@ -166,8 +203,8 @@ fun OtherTextFields(
 @Composable
 fun FirstRow(
     modifier: Modifier = Modifier,
-    emailUiState: EmailUiState,
-    onEmailValueChange: (EmailUiState) -> Unit,
+    title: String,
+    onTitleChanged: (String) -> Unit,
     enabled: Boolean = true) {
     val focusManager = LocalFocusManager.current
     Row(modifier = modifier
@@ -175,8 +212,8 @@ fun FirstRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(15.dp)) {
         OutlinedTextField(
-            value = emailUiState.title,
-            onValueChange = {onEmailValueChange(emailUiState.copy(title = it))},
+            value = title,
+            onValueChange = {onTitleChanged(it)},
             enabled = enabled,
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Next,

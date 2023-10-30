@@ -24,5 +24,4 @@ class OrganizeApp: Application() {
         container = AppDataContainer(this)
         userPreferencesRepository = UserPreferencesRepository(datastore)
     }
-
 }

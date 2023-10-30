@@ -2,7 +2,6 @@
 
 package com.example.organize3.applications
 
-import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -16,7 +15,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.DismissDirection
-import androidx.compose.material.SnackbarResult
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
@@ -42,7 +40,7 @@ import com.example.organize3.AppViewModelProvider
 import com.example.organize3.OrganizeTopAppBar
 import com.example.organize3.R
 import com.example.organize3.data.application.ApplicationAccount
-import com.example.organize3.emailAccounts.SearchField
+import com.example.organize3.emailAccounts.home.SearchField
 import com.example.organize3.ui.theme.shapes
 import kotlinx.coroutines.launch
 

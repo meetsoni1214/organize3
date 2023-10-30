@@ -7,9 +7,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.LaunchedEffect
@@ -18,7 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -37,16 +35,19 @@ import com.example.organize3.applications.ApplicationEditScreen
 import com.example.organize3.archived.ArchivedScreen
 import com.example.organize3.archived.CardType
 import com.example.organize3.bankAccounts.*
-import com.example.organize3.emailAccounts.AddEmailAccountScreen
-import com.example.organize3.emailAccounts.AddedEmailAccountsScreen
-import com.example.organize3.emailAccounts.EmailDetailScreen
-import com.example.organize3.emailAccounts.EmailEditScreen
+import com.example.organize3.emailAccounts.add_update.AddEmailAccountScreen
+import com.example.organize3.emailAccounts.home.AddedEmailAccountsScreen
+import com.example.organize3.emailAccounts.details.EmailDetailScreen
+import com.example.organize3.emailAccounts.details.EmailDetailViewModel
+import com.example.organize3.emailAccounts.home.EmailViewModel
+import com.example.organize3.emailAccounts.add_update.WriteEmailViewModel
 import com.example.organize3.navigation.OrganizeDestination
 import com.example.organize3.notes.AddNoteScreen
 import com.example.organize3.notes.NotesHome
 import com.example.organize3.presentation.sign_in.GoogleAuthUiClient
 import com.example.organize3.presentation.sign_in.SignInViewModel
 import com.example.organize3.ui.theme.Organize3Theme
+import com.example.organize3.util.Constants.EMAIL_SCREEN_ARGUMENT_KEY
 import com.google.android.gms.auth.api.identity.Identity
 import kotlinx.coroutines.launch
 
@@ -205,11 +206,36 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable(route = OrganizeDestination.EmailAccounts.route) {
+                            val viewModel: EmailViewModel = viewModel()
+                            val emailAccounts by viewModel.emailAccounts
+                            val context = LocalContext.current
                             AddedEmailAccountsScreen(
                                 onAddEmail = {navController.navigateTo(OrganizeDestination.AddEmailAccountScreen.route)},
                                 onNavigateUp = {navController.navigateUp()},
-                                navigateToEmailAccount = { id, isArchived ->
-                                    navController.navigateTo("${OrganizeDestination.EmailAccountDetailScreen.route}/${id}/${isArchived}" )
+                                emailAccounts = emailAccounts,
+                                navigateWithArgs = {
+                                    navController.navigateTo(OrganizeDestination.EmailAccountDetailScreen.passId(emailId = it))
+                                },
+                                archiveEmail = {
+//                                        emailAccount ->
+//
+//                                    viewModel.archiveEmail(
+//                                        emailAccount = emailAccount,
+//                                        onSuccess = {
+//                                            Toast.makeText(
+//                                                context,
+//                                                "Email Account Archived!",
+//                                                Toast.LENGTH_SHORT
+//                                            ).show()
+//                                        },
+//                                        onError = { message ->
+//                                            Toast.makeText(
+//                                                context,
+//                                                message,
+//                                                Toast.LENGTH_SHORT
+//                                            ).show()
+//                                        }
+//                                    )
                                 }
                             )
                         }
@@ -221,42 +247,115 @@ class MainActivity : ComponentActivity() {
                                     navController.navigateTo("$route/$bLogo")}
                             )
                         }
-                        composable(route = OrganizeDestination.AddEmailAccountScreen.route) {
+                        composable(
+                            route = OrganizeDestination.AddEmailAccountScreen.route,
+                            arguments = listOf(navArgument(name = EMAIL_SCREEN_ARGUMENT_KEY) {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
+                            })
+                        ) {
+                            val context = LocalContext.current
+                            val viewModel: WriteEmailViewModel = viewModel()
+                            val uiState = viewModel.uiState
                             AddEmailAccountScreen(
+                                uiState = uiState,
                                 onNavigateUp = {navController.navigateUp()},
-                                navigateBack = {navController.popBackStack()}
-                            )
-                        }
-                        composable(
-                            route = OrganizeDestination.EmailAccountDetailScreen.route + "/{emailId}" + "/{isArchived}",
-                            arguments = listOf(
-                                navArgument("emailId") {
-                                    type = NavType.IntType
-                                    defaultValue = 0
-                                },
-                                navArgument("isArchived") {
-                                    type = NavType.IntType
-                                    defaultValue = 0
-                                }
-                            )
-                        ) {
-                            EmailDetailScreen(
-                                navigateBack = {navController.navigateUp()},
-                                goToEditScreen = { navController.navigateTo("${OrganizeDestination.EmailEditScreen.route}/$it")}
-                            )
-                        }
-                        composable(
-                            route = OrganizeDestination.EmailEditScreen.route + "/{emailId}",
-                            arguments = listOf(
-                                navArgument("emailId") {
-                                    type = NavType.IntType
-                                    defaultValue = 0
-                                }
-                            )
-                        ) {
-                            EmailEditScreen(
                                 navigateBack = {navController.popBackStack()},
-                                onNavigateUp = {navController.navigateUp()})
+                                onTitleChanged = {viewModel.setTitle(title = it)},
+                                onEmailChanged = { viewModel.setEmail(email = it)},
+                                onPasswordChanged = {viewModel.setPassword(password = it)},
+                                onRemarksChanged = { viewModel.setRemarks(remarks = it)},
+                                onSaveClick = {
+                                    viewModel.upsertEmailAccount(
+                                        emailAccount = it,
+                                        onSuccess = { navController.popBackStack() },
+                                        onError = { message ->
+                                            Toast.makeText(
+                                                context,
+                                                message,
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    )
+                                },
+                            )
+                        }
+                        composable(
+                            route = OrganizeDestination.EmailAccountDetailScreen.route,
+                            arguments = listOf(navArgument(name = EMAIL_SCREEN_ARGUMENT_KEY) {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
+                            })
+                        ){
+                            val context = LocalContext.current
+                            val viewModel: EmailDetailViewModel = viewModel()
+                            val uiState = viewModel.uiState
+                            EmailDetailScreen(
+                                uiState = uiState,
+                                navigateBack = {navController.navigateUp()},
+                                goToEditScreen = {
+                                    navController.navigateTo(OrganizeDestination.AddEmailAccountScreen.passId(emailId = it))
+                                },
+                                onDuplicate = {
+                                    viewModel.duplicateEmailAccount(
+                                        onSuccess = {
+                                            Toast.makeText(
+                                                context,
+                                                "Copy Created Successfully!",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            navController.popBackStack()
+                                        },
+                                        onError = { message ->
+                                            Toast.makeText(
+                                                context,
+                                                message,
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    )
+                                },
+                                onArchive = {
+                                    viewModel.archiveEmailAccount(
+                                        onSuccess = {
+                                            Toast.makeText(
+                                                context,
+                                                "Email Account Archived!",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            navController.popBackStack()
+                                        },
+                                        onError = { message ->
+                                            Toast.makeText(
+                                                context,
+                                                message,
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    )
+                                },
+                                onDeleteConfirmed = {
+                                    viewModel.deleteEmailAccount(
+                                        onSuccess = {
+                                            Toast.makeText(
+                                                context,
+                                                "Deleted Email Account Successfully!",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            navController.popBackStack()
+                                        },
+                                        onError = { message ->
+                                            Toast.makeText(
+                                                context,
+                                                message,
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    )
+                                }
+                            )
                         }
                         composable(
                             route = OrganizeDestination.AddApplicationAccountScreen.route

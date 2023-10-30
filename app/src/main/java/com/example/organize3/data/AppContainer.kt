@@ -7,15 +7,12 @@ import com.example.organize3.data.application.OfflineApplicationRepository
 import com.example.organize3.data.bankAccount.BankAccountRepository
 import com.example.organize3.data.bankAccount.BankAccountRoomDatabase
 import com.example.organize3.data.bankAccount.OfflineBankAccountRepository
-import com.example.organize3.data.email.EmailRepository
-import com.example.organize3.data.email.EmailRoomDatabase
-import com.example.organize3.data.email.OfflineEmailRepository
 import com.example.organize3.data.folderWithNotes.FolderWithNotesRepository
 import com.example.organize3.data.folderWithNotes.FolderWithNotesRoomDatabase
 import com.example.organize3.data.folderWithNotes.OfflineFolderWithNotesRepository
 
 interface AppContainer {
-    val emailRepository: EmailRepository
+//    val emailRepository: EmailRepository
     val applicationRepository: ApplicationRepository
     val bankAccountRepository: BankAccountRepository
     val folderWithNotesRepository: FolderWithNotesRepository
@@ -25,12 +22,7 @@ interface AppContainer {
  * [AppContainer] implementation that provides instance of [OfflineEmailRepository], [OfflineApplicationRepository], [BankAccountRepository], [FolderRepository]
  */
 class AppDataContainer(private val context: Context): AppContainer {
-    /**
-     * Implementation for [EmailRepository]
-     */
-    override val emailRepository: EmailRepository by lazy {
-            OfflineEmailRepository(EmailRoomDatabase.getDatabase(context).emailDao())
-    }
+
     /**
      * Implementation for [ApplicationRepository]
      */

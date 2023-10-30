@@ -7,28 +7,26 @@ import com.example.organize3.data.application.ApplicationRepository
 import com.example.organize3.data.bankAccount.BankAccount
 import com.example.organize3.data.bankAccount.BankAccountRepository
 import com.example.organize3.data.email.EmailAccount
-import com.example.organize3.data.email.EmailRepository
 import com.example.organize3.data.folderWithNotes.FolderWithNotesRepository
 import com.example.organize3.data.folderWithNotes.Note
-import com.example.organize3.model.Bank
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 class ArchivedHomeViewModel(
-    private val emailRepository: EmailRepository,
+//    private val emailRepository: EmailRepository,
     private val applicationRepository: ApplicationRepository,
     private val bankAccountRepository: BankAccountRepository,
     private val notesRepository: FolderWithNotesRepository
 ): ViewModel(){
 
-    val emailArchivedState: StateFlow<EmailArchivedHomeUiState> = emailRepository.getArchivedEmailsStream().map { EmailArchivedHomeUiState(it) }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
-            initialValue = EmailArchivedHomeUiState()
-        )
+//    val emailArchivedState: StateFlow<EmailArchivedHomeUiState> = emailRepository.getArchivedEmailsStream().map { EmailArchivedHomeUiState(it) }
+//        .stateIn(
+//            scope = viewModelScope,
+//            started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
+//            initialValue = EmailArchivedHomeUiState()
+//        )
     val applicationArchivedState: StateFlow<ApplicationArchivedHomeUiState> = applicationRepository.getArchivedApplicationsStream().map { ApplicationArchivedHomeUiState(it)}
         .stateIn(
             scope = viewModelScope,

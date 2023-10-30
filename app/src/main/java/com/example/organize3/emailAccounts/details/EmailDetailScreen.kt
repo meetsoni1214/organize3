@@ -1,5 +1,5 @@
 
-package com.example.organize3.emailAccounts
+package com.example.organize3.emailAccounts.details
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -7,10 +7,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ScaffoldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,25 +19,21 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.organize3.AppViewModelProvider
 import com.example.organize3.OrganizeTopAppBar
 import com.example.organize3.R
-import com.example.organize3.appUi.EmailUiState
-import com.example.organize3.appUi.toEmailAccount
-import kotlinx.coroutines.launch
+import com.example.organize3.emailAccounts.add_update.EmailUiState
+
 
 @Composable
 fun EmailDetailScreen(
     navigateBack:() -> Unit,
     modifier: Modifier = Modifier,
-    goToEditScreen:(Int) -> Unit,
-    viewModel: EmailAccountDetailViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    uiState: EmailUiState,
+    goToEditScreen:(String) -> Unit,
+    onDeleteConfirmed: () -> Unit,
+    onArchive: () -> Unit,
+    onDuplicate: () -> Unit
 ) {
-    val uiState = viewModel.uiState.collectAsState()
-    val coroutineScope = rememberCoroutineScope()
-    val isArchived = viewModel.isArchived
-    val scaffoldState: ScaffoldState = rememberScaffoldState()
     Scaffold (
         topBar = {
                 OrganizeTopAppBar(
@@ -47,44 +41,24 @@ fun EmailDetailScreen(
                     canNavigateBack = true,
                     navigateUp = navigateBack,
                     showMenu = true,
-                    isArchived = (isArchived == 1),
+                    isArchived = (uiState.isArchived == 1),
                     shareSubject = stringResource(id = R.string.email_account_details),
                     shareText = stringResource(
                         R.string.share_email_detail,
-                        uiState.value.title,
-                        uiState.value.email,
-                        uiState.value.password,
-                        uiState.value.remarks
+                        uiState.title,
+                        uiState.email,
+                        uiState.password,
+                        uiState.remarks
                     ),
-                    unArchive = {
-                                coroutineScope.launch {
-                                    viewModel.unArchiveEmail()
-                                    navigateBack()
-                                }
-                    },
-                    deleteEmail = {
-                            coroutineScope.launch {
-                                viewModel.deleteEmail(uiState.value.toEmailAccount())
-                                navigateBack()
-                            }
-                    },
-                    archive = {
-                        coroutineScope.launch {
-                            viewModel.archiveEmail()
-                            navigateBack()
-                        }
-                    },
-                    duplicateEmail = {
-                        coroutineScope.launch {
-                            viewModel.duplicateEmail()
-                            navigateBack()
-                        }
-                    }
+                    unArchive = {},
+                    deleteEmail = onDeleteConfirmed,
+                    archive = onArchive,
+                    duplicateEmail = onDuplicate,
                 )
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { goToEditScreen(uiState.value.id) },
+                onClick = { goToEditScreen(uiState.selectedEmailId!!) },
                 shape = MaterialTheme.shapes.medium,
                 containerColor = MaterialTheme.colorScheme.tertiaryContainer,
                 contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
@@ -95,7 +69,7 @@ fun EmailDetailScreen(
         }
             ){ innerPadding ->
         EmailAccountDetails(
-            emailUiState = uiState.value,
+            emailUiState = uiState,
             modifier = modifier.padding(innerPadding)
         )
     }

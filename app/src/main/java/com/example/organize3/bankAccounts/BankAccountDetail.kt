@@ -26,8 +26,8 @@ import com.example.organize3.OrganizeTopAppBar
 import com.example.organize3.R
 import com.example.organize3.appUi.BankAccountUiState
 import com.example.organize3.appUi.toBankAccount
-import com.example.organize3.emailAccounts.OtherDetails
-import com.example.organize3.emailAccounts.TitleRow
+import com.example.organize3.emailAccounts.details.OtherDetails
+import com.example.organize3.emailAccounts.details.TitleRow
 import kotlinx.coroutines.launch
 
 @Composable
