@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.example.organize3.applications
+package com.example.organize3.applications.details
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,8 +25,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.organize3.AppViewModelProvider
 import com.example.organize3.OrganizeTopAppBar
 import com.example.organize3.R
-import com.example.organize3.appUi.ApplicationUiState
-import com.example.organize3.appUi.toApplicationAccount
 import com.example.organize3.emailAccounts.details.OtherDetails
 import com.example.organize3.emailAccounts.details.TitleRow
 import kotlinx.coroutines.launch
@@ -36,55 +34,35 @@ import kotlinx.coroutines.launch
 fun ApplicationDetailScreen(
     modifier: Modifier = Modifier,
     navigateBack:() -> Unit,
-    gotoEditScreen:(Int) -> Unit,
-    viewModel: ApplicationDetailViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    uiState: ApplicationUiState,
+    gotoEditScreen:(String) -> Unit,
+    onDeleteConfirmed: () -> Unit,
+    onArchive: () -> Unit,
+    onDuplicate: () -> Unit,
 ) {
-    val uiState = viewModel.uiState.collectAsState()
-    val coroutineScope = rememberCoroutineScope()
-    val isArchived = viewModel.isArchived
     Scaffold(
         topBar = {
             OrganizeTopAppBar(
                 title = stringResource(id = R.string.application_account),
                 canNavigateBack = true,
                 showMenu = true,
-                isArchived = (isArchived == 1),
+                isArchived = (uiState.isArchived == 1),
                 navigateUp = navigateBack,
                 shareSubject = stringResource(id = R.string.application_account),
                 shareText = stringResource(id = R.string.share_application_detail,
-                uiState.value.title,
-                uiState.value.username,
-                uiState.value.password,
-                uiState.value.remarks),
-                unArchive = {
-                            coroutineScope.launch {
-                                viewModel.unArchiveApplication()
-                                navigateBack()
-                            }
-                },
-                deleteEmail = {
-                    coroutineScope.launch {
-                        viewModel.deleteApplication(uiState.value.toApplicationAccount())
-                        navigateBack()
-                    }
-                },
-                archive = {
-                          coroutineScope.launch {
-                              viewModel.archiveApplication()
-                              navigateBack()
-                          }
-                },
-                duplicateEmail = {
-                    coroutineScope.launch {
-                        viewModel.duplicateApplication()
-                        navigateBack()
-                    }
-                }
+                uiState.title,
+                uiState.username,
+                uiState.password,
+                uiState.remarks),
+                unArchive = {},
+                deleteEmail = onDeleteConfirmed,
+                archive = onArchive,
+                duplicateEmail = onDuplicate
             )
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { gotoEditScreen(uiState.value.id)},
+                onClick = { gotoEditScreen(uiState.selectedApplicationId!!)},
                 shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.navigationBarsPadding(),
                 containerColor = MaterialTheme.colorScheme.tertiaryContainer,
@@ -96,7 +74,7 @@ fun ApplicationDetailScreen(
     ) { innerPadding ->
         ApplicationAccountDetails(
             modifier = modifier.padding(innerPadding),
-            applicationUiState = uiState.value
+            applicationUiState = uiState
         )
     }
 }

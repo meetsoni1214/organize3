@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 
-package com.example.organize3.applications
+package com.example.organize3.applications.home
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
@@ -12,11 +12,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.DismissDirection
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material3.*
 import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
@@ -28,21 +28,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.organize3.AppViewModelProvider
 import com.example.organize3.OrganizeTopAppBar
 import com.example.organize3.R
 import com.example.organize3.data.application.ApplicationAccount
-import com.example.organize3.emailAccounts.home.SearchField
+import com.example.organize3.data.email.repository.ApplicationAccounts
+import com.example.organize3.emailAccounts.home.EmptyPage
 import com.example.organize3.ui.theme.shapes
-import kotlinx.coroutines.launch
+import com.example.organize3.util.RequestState
 
 
 @Composable
@@ -50,38 +48,11 @@ fun AddedApplicationScreen(
     modifier: Modifier = Modifier,
     onNavigateUp:() -> Unit,
     canNavigateBack: Boolean = true,
+    navigateWithArgs:(String) -> Unit,
+    archiveApplication: (ApplicationAccount) -> Unit,
     onAddApplication:() -> Unit,
-    navigateToApplicationAccount: (Int, Int) -> Unit,
-    viewModel: ApplicationViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    applicationAccounts: ApplicationAccounts
 ) {
-    val applicationUiState by viewModel.applicationHomeUiState.collectAsState()
-    val anotherUiState by viewModel.anotherUiState.collectAsState()
-    val coroutineScope = rememberCoroutineScope()
-    val applicationAccounts by viewModel.applicationAccounts.collectAsState()
-    val searchQuery by viewModel.searchText.collectAsState()
-    val isSearching by viewModel.isSearching.collectAsState()
-    val isSocials = anotherUiState.isSocials
-//    if (isSocials) {
-//        viewModel.addAllSocials()
-//    }
-    val socials = listOf<ApplicationAccount>(
-        ApplicationAccount(accountTitle = stringResource(id = R.string.facebook_title),
-            accountUsername = stringResource(
-            id = R.string.email_id), accountPassword = stringResource(id = R.string.facebook_password), accountRemarks = stringResource(
-            id = R.string.facebook_remarks), appLogo = R.drawable.facebook_icon),
-        ApplicationAccount(accountTitle = stringResource(id = R.string.facebook_title), accountUsername = stringResource(
-            id = R.string.username), accountPassword = stringResource(id = R.string.instagram_password), accountRemarks = stringResource(
-            id = R.string.instagram_remarks), appLogo = R.drawable.ig_icon),
-        ApplicationAccount(accountTitle = stringResource(id = R.string.facebook_title), accountUsername = stringResource(
-            id = R.string.username), accountPassword = stringResource(id = R.string.snapchat_password), accountRemarks = stringResource(
-            id = R.string.snapchat_remarks), appLogo = R.drawable.snapchat),
-        ApplicationAccount(accountTitle = stringResource(id = R.string.facebook_title), accountUsername = stringResource(
-            id = R.string.username), accountPassword = stringResource(id = R.string.twitter_password), accountRemarks = stringResource(
-            id = R.string.twitter_remarks), appLogo = R.drawable.twitter_icon),
-        ApplicationAccount(accountTitle = stringResource(id = R.string.facebook_title), accountUsername = stringResource(
-            id = R.string.email_id), accountPassword = stringResource(id = R.string.linkedin_password), accountRemarks = stringResource(
-            id = R.string.linkedin_remarks), appLogo = R.drawable.linkedin_icon),
-        )
     Scaffold (
         modifier = modifier.fillMaxSize(),
     floatingActionButton = {
@@ -101,36 +72,33 @@ fun AddedApplicationScreen(
             navigateUp = onNavigateUp
         )
     }){ values ->
-        ApplicationScreen(
-            Modifier.padding(values),
-            applicationList = applicationAccounts,
-            onApplicationClick = navigateToApplicationAccount,
-            onShowSnackbar = {
-//                    applicationAccount ->
-//                coroutineScope.launch {
-//
-//                }
+        when (applicationAccounts) {
+            is RequestState.Success -> {
+                ApplicationScreen(
+                    Modifier.padding(values),
+                    applicationList = applicationAccounts.data,
+                    onApplicationClick = navigateWithArgs,
+                    archiveApplication = archiveApplication,
+                )
             }
-            ,
-            deleteApplication = { applicationAccount ->
-                coroutineScope.launch {
-                    viewModel.archiveApplication(applicationAccount)
-
+            is RequestState.Error -> {
+                EmptyPage(
+                    title = "Error",
+                    subtitle = "${applicationAccounts.error.message}"
+                )
+            }
+            is RequestState.Loading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
                 }
-            },
-            realApplicationList = applicationUiState.applicationList,
-            isSearching = isSearching,
-            searchQuery = searchQuery,
-            onValueChanged = viewModel::onSearchTextChange
-//            isSocials =  {
-//                if (isSocials) {
-//                    coroutineScope.launch {
-//                      viewModel.saveSocials(socials)
-//                    }
-//                    viewModel.selectSocials(isSocials = false)
-//                }
-//            }
-        )
+            } else -> {
+
+            }
+        }
+
     }
 }
 
@@ -138,26 +106,16 @@ fun AddedApplicationScreen(
 fun ApplicationScreen(
     modifier: Modifier = Modifier,
     applicationList: List<ApplicationAccount>,
-    realApplicationList: List<ApplicationAccount>,
-    isSearching: Boolean,
-    searchQuery: String,
-    onValueChanged: (String) -> Unit,
-    onApplicationClick: (Int, Int) -> Unit,
-    deleteApplication: (ApplicationAccount) -> Unit,
-    onShowSnackbar: (ApplicationAccount) -> Unit
-//    isSocials: () -> Unit = {}
+    onApplicationClick: (String) -> Unit,
+    archiveApplication: (ApplicationAccount) -> Unit,
 ) {
 
             ApplicationList(
                 modifier = modifier,
                 applicationList = applicationList,
                 onApplicationClick = onApplicationClick,
-                deleteApplication = deleteApplication,
-                isSearching = isSearching,
-                searchQuery = searchQuery,
-                onValueChanged = onValueChanged,
-                realApplicationList = realApplicationList,
-                onShowSnackbar = onShowSnackbar)
+                archiveApplication = archiveApplication
+            )
 
 }
 
@@ -166,13 +124,8 @@ fun ApplicationScreen(
 fun ApplicationList(
     modifier: Modifier = Modifier,
     applicationList: List<ApplicationAccount>,
-    onApplicationClick: (Int, Int) -> Unit,
-    deleteApplication: (ApplicationAccount) -> Unit,
-    onShowSnackbar: (ApplicationAccount) -> Unit,
-    searchQuery: String,
-    onValueChanged: (String) -> Unit,
-    realApplicationList: List<ApplicationAccount>,
-    isSearching: Boolean
+    onApplicationClick: (String) -> Unit,
+    archiveApplication: (ApplicationAccount) -> Unit,
 ) {
     var isHintDisplayed by remember {
         mutableStateOf(true)
@@ -182,39 +135,26 @@ fun ApplicationList(
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
     ) {
-        SearchField(
-            value = searchQuery,
-            onValueChanged = onValueChanged,
-            isHintDisplayed = isHintDisplayed,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(100))
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .onFocusChanged {
-                    isHintDisplayed = !(it.hasFocus)
-                },
-            hintText = stringResource(id = R.string.search_application_account))
-        Spacer(modifier = Modifier.height(16.dp))
-        if (applicationList.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                if (realApplicationList.isEmpty()) {
-                    Text(text = stringResource(id = R.string.category_screen_text_application),
-                        modifier = Modifier.padding(horizontal = 16.dp))
-                }else {
-                    Text(text = stringResource(id = R.string.no_search_result_found),
-                        modifier = Modifier.padding(horizontal = 16.dp))
-                }
-            }
-        } else {
+//        SearchField(
+//            value = searchQuery,
+//            onValueChanged = onValueChanged,
+//            isHintDisplayed = isHintDisplayed,
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .clip(RoundedCornerShape(100))
+//                .background(MaterialTheme.colorScheme.surfaceVariant)
+//                .onFocusChanged {
+//                    isHintDisplayed = !(it.hasFocus)
+//                },
+//            hintText = stringResource(id = R.string.search_application_account))
+//        Spacer(modifier = Modifier.height(16.dp))
+        if (applicationList.isNotEmpty()) {
             LazyColumn(modifier = Modifier, verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                items(items = applicationList, key = {it.id}) {application ->
+                items(items = applicationList, key = {it._id.toString()}) {application ->
                     val dismissState = rememberDismissState()
 
                     if (dismissState.isDismissed(DismissDirection.EndToStart)) {
-                        deleteApplication(application)
+
                     }
 
                     SwipeToDismiss(
@@ -266,13 +206,19 @@ fun ApplicationList(
                                     .align(alignment = Alignment.CenterVertically),
                                 backgroundColor  = MaterialTheme.colorScheme.secondaryContainer
                             ) {
-                                ApplicationCard(application = application, onApplicationClick = onApplicationClick)
+                                ApplicationCard(
+                                    application = application,
+                                    onApplicationClick = onApplicationClick)
                             }
                         }
                     )
 
                 }
             }
+        } else {
+            EmptyPage(
+                title = stringResource(id = R.string.empty_application_account)
+            )
         }
     }
 }
@@ -280,12 +226,12 @@ fun ApplicationList(
 @Composable
 fun ApplicationCard(
     modifier: Modifier = Modifier,
-    onApplicationClick: (Int, Int) -> Unit,
+    onApplicationClick: (String) -> Unit,
     application: ApplicationAccount
 ) {
     Card(modifier = modifier
         .padding(4.dp)
-        .clickable { onApplicationClick(application.id, 0) }
+        .clickable { onApplicationClick(application._id.toHexString()) }
         .fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
         colors  = CardDefaults.cardColors(
@@ -296,7 +242,7 @@ fun ApplicationCard(
             .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically) {
             Image(
-                painter = painterResource(id = application.appLogo),
+                painter = painterResource(id = R.drawable.website_logo),
                 contentDescription = stringResource(id = R.string.appLogo),
                 modifier = Modifier
                     .size(55.dp)
@@ -305,7 +251,7 @@ fun ApplicationCard(
                 contentScale = ContentScale.Crop
             )
             Text(
-                text = application.accountTitle,
+                text = application.title,
                 modifier = Modifier
                     .padding(8.dp),
                 style = MaterialTheme.typography.titleLarge

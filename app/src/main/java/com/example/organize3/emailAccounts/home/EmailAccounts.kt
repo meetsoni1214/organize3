@@ -1,5 +1,6 @@
 @file:OptIn(ExperimentalMaterialApi::class, ExperimentalMaterialApi::class,
-    ExperimentalMaterialApi::class, ExperimentalMaterialApi::class, ExperimentalMaterialApi::class
+    ExperimentalMaterialApi::class, ExperimentalMaterialApi::class, ExperimentalMaterialApi::class,
+    ExperimentalMaterial3Api::class
 )
 
 package com.example.organize3.emailAccounts.home
@@ -10,17 +11,21 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.DismissDirection
 import androidx.compose.material.DismissValue
+import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.material3.Card
@@ -28,11 +33,13 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
@@ -40,6 +47,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
@@ -50,6 +58,9 @@ import com.example.organize3.data.email.EmailAccount
 import com.example.organize3.data.email.repository.EmailAccounts
 import com.example.organize3.ui.theme.shapes
 import com.example.organize3.util.RequestState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,8 +70,10 @@ fun AddedEmailAccountsScreen(
     navigateWithArgs: (String) -> Unit,
     onNavigateUp:() -> Unit,
     onAddEmail: () -> Unit,
+    searchQuery: String,
+    onValueChanged: (String) -> Unit,
     archiveEmail: (EmailAccount) -> Unit,
-    emailAccounts: EmailAccounts
+    emailAccounts: EmailAccounts,
 ) {
     val coroutineScope = rememberCoroutineScope()
     Scaffold (
@@ -85,14 +98,16 @@ fun AddedEmailAccountsScreen(
             is RequestState.Success -> {
                 EmailScreen(
                     modifier = modifier.padding(values),
-                    emailList = emailAccounts.data,
-//                    realEmailList = emailHomeUiState.emailList,
-//                    onEmailClick = navigateToEmailAccount,
+                    emailList = if (searchQuery.isBlank()) {
+                        emailAccounts.data
+                    } else {
+                        emailAccounts.data.filter {
+                               it.doesMatchSearchQuery(searchQuery)
+                           } },
                     onEmailClick = navigateWithArgs,
-//                    onValueChanged = viewModel::onSearchTextChange,
-//                    searchQuery = searchQuery,
                     archiveEmail = archiveEmail,
-//                    isSearching = isSearching
+                    searchQuery = searchQuery,
+                    onValueChanged = onValueChanged
                 )
             }
             is RequestState.Error -> {
@@ -119,23 +134,18 @@ fun AddedEmailAccountsScreen(
 fun EmailScreen(
     modifier: Modifier = Modifier,
     emailList: List<EmailAccount>,
-//    realEmailList: List<EmailAccount>,
-//    isSearching: Boolean,
-//    searchQuery: String,
-//    onValueChanged: (String) -> Unit,
-//    onEmailClick: (Int, Int) -> Unit,
     onEmailClick: (String) -> Unit,
+    searchQuery: String,
+    onValueChanged: (String) -> Unit,
     archiveEmail: (EmailAccount) -> Unit
 ) {
     EmailList(
         modifier = modifier,
         onEmailClick = onEmailClick,
-//        searchQuery = searchQuery,
-//        onValueChanged = onValueChanged,
         emailList = emailList,
-        archiveEmail = archiveEmail
-//        isSearching = isSearching,
-//        realEmailList = realEmailList
+        archiveEmail = archiveEmail,
+        searchQuery = searchQuery,
+        onValueChanged = onValueChanged
     )
 }
 
@@ -145,37 +155,27 @@ fun EmailScreen(
 @Composable
 fun EmailList(
     modifier: Modifier = Modifier,
-//    searchQuery: String,
-//    isSearching: Boolean,
-//    onValueChanged: (String) -> Unit,
-//    realEmailList: List<EmailAccount>,
     onEmailClick: (String) -> Unit,
     emailList: List<EmailAccount>,
+    searchQuery: String,
+    onValueChanged: (String) -> Unit,
     archiveEmail: (EmailAccount) -> Unit
 ) {
     var isHintDisplayed by remember {
         mutableStateOf(true)
     }
+    var isActive by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
     ) {
-//       SearchField(
-//           value = searchQuery,
-//           isHintDisplayed = isHintDisplayed,
-//           modifier = Modifier
-//               .fillMaxWidth()
-//               .clip(RoundedCornerShape(100))
-//               .background(MaterialTheme.colorScheme.surfaceVariant)
-//               .onFocusChanged {
-//                   isHintDisplayed = !(it.hasFocus)
-//               }
-//           ,
-//           hintText = stringResource(id = R.string.hint_email_search),
-//           onValueChanged = onValueChanged)
-//        Spacer(modifier = Modifier.height(16.dp))
+       SearchField(
+           value = searchQuery,
+           searchText = R.string.search_email_account,
+           onValueChanged = onValueChanged)
+        Spacer(modifier = Modifier.height(16.dp))
         if (emailList.isNotEmpty()) {
                 LazyColumn(
                     modifier = Modifier,
@@ -184,7 +184,7 @@ fun EmailList(
                         val dismissState = rememberDismissState()
 
                         if (dismissState.isDismissed(DismissDirection.EndToStart)) {
-                            archiveEmail(email)
+//                            archiveEmail(email)
                         }
                         SwipeToDismiss(
                             state = dismissState,
@@ -244,9 +244,16 @@ fun EmailList(
                     }
                 }
         } else {
-            EmptyPage(
-                title = stringResource(id = R.string.no_email_found)
-            )
+            if (searchQuery.isBlank()) {
+                EmptyPage(
+                    title = stringResource(id = R.string.no_email_found)
+                )
+            } else {
+                EmptyPage(
+                    title = stringResource(id = R.string.no_search_result_found),
+                    subtitle = ""
+                )
+            }
         }
     }
 }
@@ -279,48 +286,44 @@ fun EmptyPage(
         )
     }
 }
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-public fun SearchField(
+fun SearchField(
     value: String,
     onValueChanged: (String) -> Unit,
-    isHintDisplayed: Boolean,
-    modifier: Modifier = Modifier,
-    hintText: String = "",
+    searchText: Int,
     textStyle: TextStyle = TextStyle(
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         fontSize = TextUnit.Unspecified
     ),
     maxLines: Int = 1
 ) {
+    val interactionSource: MutableInteractionSource = remember { MutableInteractionSource() }
    BasicTextField(
        value = value,
        onValueChange = onValueChanged,
+       modifier = Modifier
+           .fillMaxWidth()
+           .clip(RoundedCornerShape(30))
+           .background(color = MaterialTheme.colorScheme.tertiaryContainer),
        textStyle = textStyle,
        maxLines = maxLines,
        cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurfaceVariant),
-       decorationBox = { innerTextField ->
-           Box(
-               modifier = modifier
-                   .padding(12.dp)
-           ) {
-               if (value.isEmpty() && isHintDisplayed) {
-                   Row(
-                       modifier = Modifier.fillMaxWidth(),
-                       verticalAlignment = Alignment.CenterVertically
-                   ) {
-                       Icon(
-                           imageVector = Icons.Default.Search,
-                           tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                           contentDescription = stringResource(id = R.string.search))
-                       Spacer(modifier = Modifier.width(12.dp))
-                       Text(
-                           text = hintText,
-                           color = MaterialTheme.colorScheme.onSurfaceVariant,
-                       )
-                   }
-               }
-               innerTextField()
-           }
+       decorationBox = @Composable { innerTextField ->
+           TextFieldDefaults.DecorationBox(
+               value = value,
+               innerTextField = innerTextField,
+               singleLine = true,
+               visualTransformation = VisualTransformation.None,
+               interactionSource = interactionSource,
+               enabled = true,
+               placeholder = { Text(text = stringResource(id = searchText)) },
+               leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = "Search Icon")},
+               shape = RoundedCornerShape(30),
+               contentPadding = TextFieldDefaults.contentPaddingWithoutLabel(),
+               colors = SearchBarDefaults.inputFieldColors(),
+               container = {},
+           )
        }
    )
 }

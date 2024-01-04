@@ -1,7 +1,8 @@
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
 
-package com.example.organize3.applications
+package com.example.organize3.applications.add_update
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -18,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -26,12 +28,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.organize3.AppViewModelProvider
 import com.example.organize3.OrganizeTopAppBar
 import com.example.organize3.R
-import com.example.organize3.appUi.ApplicationUiState
+import com.example.organize3.applications.details.ApplicationUiState
+import com.example.organize3.data.application.ApplicationAccount
 import kotlinx.coroutines.launch
 
 @Composable
@@ -40,7 +42,12 @@ fun AddApplicationScreen(
     canNavigateBack: Boolean = true,
     navigateUp: () -> Unit,
     navigateBack: () -> Unit,
-    viewModel: ApplicationEntryViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    uiState: ApplicationUiState,
+    onTitleChanged: (String) -> Unit,
+    onUsernameChanged: (String) -> Unit,
+    onPasswordChanged: (String) -> Unit,
+    onRemarksChanged: (String) -> Unit,
+    onSaveClick: (ApplicationAccount) -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
     Scaffold (
@@ -54,14 +61,12 @@ fun AddApplicationScreen(
             ) { innerPadding ->
         ApplicationEntryBody(
             modifier = modifier.padding(innerPadding),
-            applicationUiState = viewModel.applicationUiState,
-            onApplicationValueChange = viewModel::updateUiState,
-            onSaveClick = {
-                coroutineScope.launch {
-                    viewModel.saveApplication()
-                }
-                navigateBack()
-            }
+            applicationUiState = uiState,
+            onTitleChanged = onTitleChanged,
+            onUsernameChanged = onUsernameChanged,
+            onRemarksChanged = onRemarksChanged,
+            onPasswordChanged = onPasswordChanged,
+            onSaveClick = onSaveClick
         )
     }
 }
@@ -69,10 +74,14 @@ fun AddApplicationScreen(
 @Composable
 fun ApplicationEntryBody(
     applicationUiState: ApplicationUiState,
-    onApplicationValueChange: (ApplicationUiState) -> Unit,
-    onSaveClick: () -> Unit,
+    onTitleChanged: (String) -> Unit,
+    onUsernameChanged: (String) -> Unit,
+    onPasswordChanged: (String) -> Unit,
+    onRemarksChanged: (String) -> Unit,
+    onSaveClick: (ApplicationAccount) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     Column (
         modifier = modifier
             .fillMaxWidth()
@@ -80,13 +89,37 @@ fun ApplicationEntryBody(
             .verticalScroll(rememberScrollState())
             ){
         AddAppFirstRow(
-            applicationUiState = applicationUiState,
-            onApplicationValueChange = onApplicationValueChange
+            title = applicationUiState.title,
+            onTitleChanged = onTitleChanged
         )
-        AppOtherTextFields(applicationUiState = applicationUiState, onApplicationValueChange = onApplicationValueChange)
+        AppOtherTextFields(
+            username = applicationUiState.username,
+            password = applicationUiState.password,
+            remarks = applicationUiState.remarks,
+            onRemarksChanged = onRemarksChanged,
+            onPasswordChanged = onPasswordChanged,
+            onUsernameChanged = onUsernameChanged
+        )
         Button(
-            onClick = onSaveClick,
-            enabled = applicationUiState.actionEnabled,
+            onClick = {
+                      if (applicationUiState.title.isNotEmpty() && applicationUiState.username.isNotEmpty()) {
+                          onSaveClick(
+                              ApplicationAccount().apply {
+                                  this.title = applicationUiState.title
+                                  this.username = applicationUiState.username
+                                  this.password = applicationUiState.password
+                                  this.remarks = applicationUiState.remarks
+                              }
+                          )
+                      } else {
+                          Toast.makeText(
+                              context,
+                              "Fields cannot be empty.",
+                              Toast.LENGTH_SHORT
+                          ).show()
+                      }
+            },
+            enabled = true,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = stringResource(id = R.string.save_details))
@@ -97,8 +130,8 @@ fun ApplicationEntryBody(
 @Composable
 fun AddAppFirstRow(
     modifier: Modifier = Modifier,
-    applicationUiState: ApplicationUiState,
-    onApplicationValueChange: (ApplicationUiState) -> Unit,
+    title: String,
+    onTitleChanged: (String) -> Unit,
     enabled: Boolean = true
 ) {
     val focusManager = LocalFocusManager.current
@@ -107,8 +140,8 @@ fun AddAppFirstRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(15.dp)) {
         OutlinedTextField(
-            value = applicationUiState.title,
-            onValueChange = {onApplicationValueChange(applicationUiState.copy(title = it))},
+            value = title,
+            onValueChange = {onTitleChanged(it)},
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
@@ -139,9 +172,13 @@ fun AddAppFirstRow(
 @Composable
 fun AppOtherTextFields(
     modifier: Modifier = Modifier,
-    applicationUiState: ApplicationUiState,
+    username: String,
+    onUsernameChanged: (String) -> Unit,
+    password: String,
+    onPasswordChanged: (String) -> Unit,
+    remarks: String,
+    onRemarksChanged: (String) -> Unit,
     enabled: Boolean = true,
-    onApplicationValueChange: (ApplicationUiState) -> Unit
 ) {
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
@@ -152,8 +189,8 @@ fun AppOtherTextFields(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         OutlinedTextField(
-            value = applicationUiState.username,
-            onValueChange = {onApplicationValueChange(applicationUiState.copy(username = it))},
+            value = username,
+            onValueChange = {onUsernameChanged(it)},
             singleLine = true,
             enabled = enabled,
             keyboardActions = KeyboardActions(
@@ -168,8 +205,8 @@ fun AppOtherTextFields(
             label = {Text(stringResource(id = R.string.facebook_login_title))}
         )
         OutlinedTextField(
-            value = applicationUiState.password,
-            onValueChange = {onApplicationValueChange(applicationUiState.copy(password = it))},
+            value = password,
+            onValueChange = {onPasswordChanged(it)},
             singleLine = true,
             enabled = enabled,
             modifier = Modifier.fillMaxWidth(),
@@ -196,8 +233,8 @@ fun AppOtherTextFields(
             label = {Text(stringResource(id = R.string.password))}
         )
         OutlinedTextField(
-            value = applicationUiState.remarks,
-            onValueChange = {onApplicationValueChange(applicationUiState.copy(remarks = it))},
+            value = remarks,
+            onValueChange = {onRemarksChanged(it)},
             singleLine = true,
             enabled = enabled,
             keyboardOptions = KeyboardOptions(

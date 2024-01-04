@@ -116,8 +116,7 @@ fun TitleRow(
                 contentDescription = stringResource(id = R.string.email_icon),
                 modifier = Modifier
                     .padding(8.dp)
-                    .size(100.dp)
-                    .clip(CircleShape),
+                    .size(100.dp),
                 contentScale = ContentScale.Crop
             )
     }

@@ -43,8 +43,7 @@ fun ArchivedScreen(
     onCardClick: (Int, Int, Int, CardType) -> Unit,
     viewModel: ArchivedHomeViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
-//    val emailArchivedHomeUiState by viewModel.emailArchivedState.collectAsState()
-    val applicationArchivedHomeUiState by viewModel.applicationArchivedState.collectAsState()
+
     val bankAccountArchivedHomeUiState by viewModel.bankAccountArchivedState.collectAsState()
     val noteArchivedHomeUiState by viewModel.noteArchivedState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
@@ -60,7 +59,7 @@ fun ArchivedScreen(
         ArchivedScreenBody(
             modifier = modifier.padding(values),
 //            emailList = emailArchivedHomeUiState.emailList,
-            applicationList = applicationArchivedHomeUiState.applicationList,
+//            applicationList = applicationArchivedHomeUiState.applicationList,
             bankAccountList = bankAccountArchivedHomeUiState.bankAccountList,
             notesList = noteArchivedHomeUiState.notesList,
             onCardClick = onCardClick
@@ -72,7 +71,7 @@ fun ArchivedScreen(
 fun ArchivedScreenBody(
     modifier: Modifier = Modifier,
 //    emailList: List<EmailAccount>,
-    applicationList: List<ApplicationAccount>,
+//    applicationList: List<ApplicationAccount>,
     bankAccountList: List<BankAccount>,
     notesList: List<Note>,
     onCardClick: (Int, Int, Int, CardType) -> Unit
@@ -85,17 +84,17 @@ fun ArchivedScreenBody(
     ) {
 
 
-
-        items(items = applicationList, key = {it.id}) {application ->
-            ArchivedCard(
-                imageRes = R.drawable.website_logo,
-                contentDes = stringResource(id = R.string.appLogo),
-                title = application.accountTitle,
-                onCardClick = onCardClick,
-                cardId = application.id,
-                cardType = CardType.ApplicationAccountCard
-            )
-        }
+//
+//        items(items = applicationList, key = {it.id}) {application ->
+//            ArchivedCard(
+//                imageRes = R.drawable.website_logo,
+//                contentDes = stringResource(id = R.string.appLogo),
+//                title = application.accountTitle,
+//                onCardClick = onCardClick,
+//                cardId = application.id,
+//                cardType = CardType.ApplicationAccountCard
+//            )
+//        }
 
 
         items(items = notesList, key = {it.id}) { note ->

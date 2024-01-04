@@ -154,16 +154,7 @@ fun BankAccountList(
     ) {
         SearchField(
             value = searchQuery,
-            isHintDisplayed = isHintDisplayed,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(100))
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .onFocusChanged {
-                    isHintDisplayed = !(it.hasFocus)
-                }
-            ,
-            hintText = stringResource(id = R.string.hint_bankAccount_search),
+            searchText = R.string.hint_bankAccount_search,
             onValueChanged = onValueChange)
         Spacer(modifier = Modifier.height(16.dp))
         if (bankAccountList.isEmpty()) {

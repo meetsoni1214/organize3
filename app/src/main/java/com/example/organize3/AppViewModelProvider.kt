@@ -6,10 +6,6 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.example.organize3.applications.ApplicationDetailViewModel
-import com.example.organize3.applications.ApplicationEditViewModel
-import com.example.organize3.applications.ApplicationEntryViewModel
-import com.example.organize3.applications.ApplicationViewModel
 import com.example.organize3.archived.ArchivedHomeViewModel
 import com.example.organize3.bankAccounts.BankAccountDetailViewModel
 import com.example.organize3.bankAccounts.BankAccountEditViewModel
@@ -27,33 +23,6 @@ import com.example.organize3.notes.NotesHomeViewModel
 object AppViewModelProvider {
     val Factory = viewModelFactory {
 
-        // Initializer for ApplicationViewModel
-        initializer {
-            ApplicationViewModel(
-                applicationRepository = organizeApplication().container.applicationRepository,
-                userPreferencesRepository = organizeApplication().userPreferencesRepository
-            )
-        }
-        // Initializer for ApplicationEntryViewModel
-        initializer {
-            ApplicationEntryViewModel(
-                applicationRepository = organizeApplication().container.applicationRepository
-            )
-        }
-        // Initializer for ApplicationDetailViewModel
-        initializer {
-            ApplicationDetailViewModel(
-                applicationRepository = organizeApplication().container.applicationRepository,
-                savedStateHandle = this.createSavedStateHandle()
-            )
-        }
-        // Initializer for ApplicationEditViewModel
-        initializer {
-            ApplicationEditViewModel(
-                applicationRepository = organizeApplication().container.applicationRepository,
-                savedStateHandle = this.createSavedStateHandle()
-            )
-        }
         // Initializer for BankAccountEntryViewModel
         initializer {
             BankAccountEntryViewModel(
@@ -106,7 +75,7 @@ object AppViewModelProvider {
             ArchivedHomeViewModel(
 //                emailRepository = organizeApplication().container.emailRepository,
                 notesRepository = organizeApplication().container.folderWithNotesRepository,
-                applicationRepository = organizeApplication().container.applicationRepository,
+//                applicationRepository = organizeApplication().container.applicationRepository,
                 bankAccountRepository =  organizeApplication().container.bankAccountRepository
             )
         }

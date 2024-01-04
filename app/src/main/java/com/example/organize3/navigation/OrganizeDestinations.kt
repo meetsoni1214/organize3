@@ -1,5 +1,6 @@
 package com.example.organize3.navigation
 
+import com.example.organize3.util.Constants.APPLICATION_SCREEN_ARGUMENT_KEY
 import com.example.organize3.util.Constants.EMAIL_SCREEN_ARGUMENT_KEY
 
 
@@ -16,8 +17,12 @@ sealed class OrganizeDestination(val route: String) {
         fun passId(emailId: String) = "emailAccount_details?$EMAIL_SCREEN_ARGUMENT_KEY=$emailId"
     }
     object EmailEditScreen: OrganizeDestination("emailAccount_edit")
-    object AddApplicationAccountScreen: OrganizeDestination("applicationAccount_one")
-    object ApplicationAccountDetailScreen: OrganizeDestination("applicationAccount_two")
+    object AddApplicationAccountScreen: OrganizeDestination("applicationAccount_one?$APPLICATION_SCREEN_ARGUMENT_KEY={$APPLICATION_SCREEN_ARGUMENT_KEY}") {
+        fun passId(appId: String) = "applicationAccount_one?$APPLICATION_SCREEN_ARGUMENT_KEY=$appId"
+    }
+    object ApplicationAccountDetailScreen: OrganizeDestination("applicationAccount_two?$APPLICATION_SCREEN_ARGUMENT_KEY={$APPLICATION_SCREEN_ARGUMENT_KEY}") {
+        fun passId(appId: String) = "applicationAccount_two?$APPLICATION_SCREEN_ARGUMENT_KEY=$appId"
+    }
     object ApplicationEditScreen: OrganizeDestination("applicationAccount_edit")
     object AddOtherDetailsScreen: OrganizeDestination("bank_other_details_add")
     object BankAccountDetailsScreen: OrganizeDestination("bank_account_details")

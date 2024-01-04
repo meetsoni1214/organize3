@@ -1,6 +1,7 @@
 package com.example.organize3
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -11,6 +12,7 @@ import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,16 +24,19 @@ import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavArgument
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.organize3.applications.AddApplicationScreen
-import com.example.organize3.applications.AddedApplicationScreen
-import com.example.organize3.applications.ApplicationDetailScreen
-import com.example.organize3.applications.ApplicationEditScreen
+import com.example.organize3.applications.add_update.AddApplicationScreen
+import com.example.organize3.applications.home.AddedApplicationScreen
+import com.example.organize3.applications.details.ApplicationDetailScreen
+import com.example.organize3.applications.add_update.ApplicationEditViewModel
+import com.example.organize3.applications.details.ApplicationDetailViewModel
+import com.example.organize3.applications.home.ApplicationViewModel
 import com.example.organize3.archived.ArchivedScreen
 import com.example.organize3.archived.CardType
 import com.example.organize3.bankAccounts.*
@@ -47,6 +52,7 @@ import com.example.organize3.notes.NotesHome
 import com.example.organize3.presentation.sign_in.GoogleAuthUiClient
 import com.example.organize3.presentation.sign_in.SignInViewModel
 import com.example.organize3.ui.theme.Organize3Theme
+import com.example.organize3.util.Constants.APPLICATION_SCREEN_ARGUMENT_KEY
 import com.example.organize3.util.Constants.EMAIL_SCREEN_ARGUMENT_KEY
 import com.google.android.gms.auth.api.identity.Identity
 import kotlinx.coroutines.launch
@@ -197,11 +203,34 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable(route = OrganizeDestination.ApplicationAccounts.route) {
+                            val viewModel: ApplicationViewModel = viewModel()
+                            val applicationAccounts by viewModel.applicationAccounts
+                            val context = LocalContext.current
                             AddedApplicationScreen(
                                 onNavigateUp = {navController.navigateUp()},
                                 onAddApplication = {navController.navigateTo(OrganizeDestination.AddApplicationAccountScreen.route)},
-                                navigateToApplicationAccount = { id, isArchived ->
-                                    navController.navigateTo("${OrganizeDestination.ApplicationAccountDetailScreen.route}/${id}/${isArchived}")
+                                navigateWithArgs = {
+                                    navController.navigateTo(OrganizeDestination.ApplicationAccountDetailScreen.passId(appId = it))
+                                },
+                                applicationAccounts = applicationAccounts,
+                                archiveApplication = { applicationAccount ->
+                                    viewModel.archiveApplication(
+                                        applicationAccount = applicationAccount,
+                                        onSuccess = {
+                                            Toast.makeText(
+                                                context,
+                                                "Application Account Archived!",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        },
+                                        onError = { message ->
+                                            Toast.makeText(
+                                                context,
+                                                message,
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    )
                                 }
                             )
                         }
@@ -209,6 +238,8 @@ class MainActivity : ComponentActivity() {
                             val viewModel: EmailViewModel = viewModel()
                             val emailAccounts by viewModel.emailAccounts
                             val context = LocalContext.current
+                            val searchQuery by viewModel.searchText.collectAsState()
+                            val isSearching by viewModel.isSearching.collectAsState()
                             AddedEmailAccountsScreen(
                                 onAddEmail = {navController.navigateTo(OrganizeDestination.AddEmailAccountScreen.route)},
                                 onNavigateUp = {navController.navigateUp()},
@@ -216,26 +247,28 @@ class MainActivity : ComponentActivity() {
                                 navigateWithArgs = {
                                     navController.navigateTo(OrganizeDestination.EmailAccountDetailScreen.passId(emailId = it))
                                 },
+                                searchQuery = searchQuery,
+                                onValueChanged = viewModel::onSearchTextChange,
                                 archiveEmail = {
-//                                        emailAccount ->
-//
-//                                    viewModel.archiveEmail(
-//                                        emailAccount = emailAccount,
-//                                        onSuccess = {
-//                                            Toast.makeText(
-//                                                context,
-//                                                "Email Account Archived!",
-//                                                Toast.LENGTH_SHORT
-//                                            ).show()
-//                                        },
-//                                        onError = { message ->
-//                                            Toast.makeText(
-//                                                context,
-//                                                message,
-//                                                Toast.LENGTH_SHORT
-//                                            ).show()
-//                                        }
-//                                    )
+                                        emailAccount ->
+
+                                    viewModel.archiveEmail(
+                                        emailAccount = emailAccount,
+                                        onSuccess = {
+                                            Toast.makeText(
+                                                context,
+                                                "Email Account Archived!",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        },
+                                        onError = { message ->
+                                            Toast.makeText(
+                                                context,
+                                                message,
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    )
                                 }
                             )
                         }
@@ -358,42 +391,115 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable(
-                            route = OrganizeDestination.AddApplicationAccountScreen.route
+                            route = OrganizeDestination.AddApplicationAccountScreen.route,
+                            arguments = listOf(navArgument(name = APPLICATION_SCREEN_ARGUMENT_KEY){
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
+                            })
                         ) {
+                            val viewModel: ApplicationEditViewModel = viewModel()
+                            val uiState = viewModel.uiState
+                            val context = LocalContext.current
                             AddApplicationScreen(
-                                navigateUp = { navController.navigateUp() },
-                                navigateBack = { navController.popBackStack() })
-                        }
-                        composable(
-                            route = OrganizeDestination.ApplicationAccountDetailScreen.route + "/{applicationId}" + "/{isArchived}",
-                            arguments = listOf(
-                                navArgument("applicationId") {
-                                    type = NavType.IntType
-                                    defaultValue = 0
+                                uiState = uiState,
+                                onTitleChanged = {viewModel.setTitle(it)},
+                                onPasswordChanged = {viewModel.setPassword(it)},
+                                onRemarksChanged = {viewModel.setRemarks(it)},
+                                onUsernameChanged = {viewModel.setUsername(it)},
+                                onSaveClick = {
+                                    viewModel.upsertApplicationAccount(
+                                        applicationAccount = it,
+                                        onSuccess = { navController.popBackStack() },
+                                        onError = { message ->
+                                            Toast.makeText(
+                                                context,
+                                                message,
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            Log.d("ERROR", message)
+                                        }
+                                    )
                                 },
-                                navArgument("isArchived") {
-                                    type = NavType.IntType
-                                    defaultValue = 0
-                                }
-                            )
-                        ) {
-                            ApplicationDetailScreen(
-                                navigateBack = { navController.popBackStack() },
-                                gotoEditScreen = { navController.navigateTo("${OrganizeDestination.ApplicationEditScreen.route}/$it")}
+                                navigateUp = { navController.navigateUp() },
+                                navigateBack = { navController.popBackStack() }
                             )
                         }
                         composable(
-                            route = OrganizeDestination.ApplicationEditScreen.route + "/{applicationId}",
+                            route = OrganizeDestination.ApplicationAccountDetailScreen.route,
                             arguments = listOf(
-                                navArgument("applicationId") {
-                                    type = NavType.IntType
-                                    defaultValue = 0
+                                navArgument(APPLICATION_SCREEN_ARGUMENT_KEY) {
+                                    type = NavType.StringType
+                                    nullable = true
+                                    defaultValue = null
                                 }
                             )
                         ) {
-                            ApplicationEditScreen(
-                                onNavigateUp = { navController.navigateUp() },
-                                navigateBack = {navController.popBackStack()})
+                            val viewModel: ApplicationDetailViewModel = viewModel()
+                            val uiState = viewModel.uiState
+                            val context = LocalContext.current
+                            ApplicationDetailScreen(
+                                uiState = uiState,
+                                onDeleteConfirmed = {
+                                    viewModel.deleteApplicationAccount(
+                                        onSuccess = {
+                                            Toast.makeText(
+                                                context,
+                                                "Deleted Application Account Successfully!",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            navController.popBackStack()
+                                        },
+                                        onError = { message ->
+                                            Toast.makeText(
+                                                context,
+                                                message,
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    )
+                                },
+                                onArchive = {
+                                            viewModel.archiveApplicationAccount(
+                                                onSuccess = {
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Application Account Archived!",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                    navController.popBackStack()
+                                                },
+                                                onError = { message ->
+                                                    Toast.makeText(
+                                                        context,
+                                                        message,
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                }
+                                            )
+                                },
+                                onDuplicate = {
+                                    viewModel.duplicateApplicationAccount(
+                                        onSuccess = {
+                                            Toast.makeText(
+                                                context,
+                                                "Copy Created Successfully!",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            navController.popBackStack()
+                                        },
+                                        onError = { message ->
+                                            Toast.makeText(
+                                                context,
+                                                message,
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    )
+                                },
+                                navigateBack = { navController.popBackStack() },
+                                gotoEditScreen = { navController.navigateTo(OrganizeDestination.AddApplicationAccountScreen.passId(it))}
+                            )
                         }
                         composable(
                             route = OrganizeDestination.AddOtherDetailsScreen.route + "/{bName}" + "/{bLogo}",

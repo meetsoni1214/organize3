@@ -287,7 +287,6 @@ fun DrawerMenuInsideItem(
     },
 ) {
     val modifiedText = if (isFolderSelected) folderName else stringResource(id = text)
-
         Row(
             modifier = modifier
                 .fillMaxWidth()
@@ -304,8 +303,8 @@ fun DrawerMenuInsideItem(
         ) {
             Image(
                 modifier = Modifier
-                    .clip(CircleShape)
                     .size(45.dp)
+                    .clip(CircleShape)
                     .padding(12.dp),
                 painter = painterResource(id = iconDrawableId),
                 contentDescription = null,
@@ -527,6 +526,7 @@ fun CategoriesBody(
                                 if (dismissState.dismissDirection != null) 4.dp else 0.dp
                             ).value,
                             modifier = Modifier
+                                .padding(vertical = 2.dp)
                                 .fillMaxWidth()
                                 .align(alignment = Alignment.CenterVertically),
                             shape = shapes.medium,
@@ -568,11 +568,12 @@ fun FolderCard(
                 painter = painterResource(id = R.drawable.folder),
                 contentDescription = stringResource(id = R.string.folder),
                 modifier = Modifier
-                    .size(55.dp)
+                    .size(45.dp)
                     .clip(CircleShape)
                     .padding(6.dp),
                 contentScale = ContentScale.Crop
             )
+            Spacer(modifier = Modifier.width(6.dp))
             Text(
                 text = folder.folderName,
                 modifier = Modifier.padding(6.dp),
@@ -591,7 +592,8 @@ fun CategoryCard(
 ) {
     Card(
         modifier = modifier
-            .padding(vertical = 8.dp)
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
         ,
         shape = MaterialTheme.shapes.medium,
         onClick = {
@@ -600,17 +602,25 @@ fun CategoryCard(
             containerColor = MaterialTheme.colorScheme.secondaryContainer
         ),
         ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Image(painter = painterResource(id = imageId),
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = painterResource(id = imageId),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .height(194.dp)
-                    .fillMaxWidth()
-            )
-            Text(text = stringResource(id = textId),
+                    .size(55.dp)
+                    .padding(10.dp)
+                )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                text = stringResource(id = textId),
                 style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(top = 8.dp, bottom = 8.dp))
+                modifier = Modifier.padding(6.dp)
+                )
         }
     }
     }

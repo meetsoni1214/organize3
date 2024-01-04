@@ -1,9 +1,6 @@
 package com.example.organize3.data
 
 import android.content.Context
-import com.example.organize3.data.application.ApplicationRepository
-import com.example.organize3.data.application.ApplicationRoomDatabase
-import com.example.organize3.data.application.OfflineApplicationRepository
 import com.example.organize3.data.bankAccount.BankAccountRepository
 import com.example.organize3.data.bankAccount.BankAccountRoomDatabase
 import com.example.organize3.data.bankAccount.OfflineBankAccountRepository
@@ -12,8 +9,6 @@ import com.example.organize3.data.folderWithNotes.FolderWithNotesRoomDatabase
 import com.example.organize3.data.folderWithNotes.OfflineFolderWithNotesRepository
 
 interface AppContainer {
-//    val emailRepository: EmailRepository
-    val applicationRepository: ApplicationRepository
     val bankAccountRepository: BankAccountRepository
     val folderWithNotesRepository: FolderWithNotesRepository
 }
@@ -23,12 +18,6 @@ interface AppContainer {
  */
 class AppDataContainer(private val context: Context): AppContainer {
 
-    /**
-     * Implementation for [ApplicationRepository]
-     */
-    override val applicationRepository: ApplicationRepository by lazy {
-        OfflineApplicationRepository(ApplicationRoomDatabase.getDatabase(context).applicationDao())
-    }
     /**
      * Implementation for [BankAccountRepository]
      */

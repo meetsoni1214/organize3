@@ -160,7 +160,6 @@ fun AddOtherDetailsFirstRow(
             id = R.string.bank_logo
         ),
             modifier = Modifier
-                .clip(CircleShape)
                 .width(60.dp)
                 .height(60.dp),
             contentScale = ContentScale.Crop

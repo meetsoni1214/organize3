@@ -40,7 +40,7 @@ class WriteEmailViewModel(
                     emailId = org.mongodb.kbson.ObjectId.invoke(uiState.selectedEmailId!!)
                 )
                     .catch {
-                        emit(RequestState.Error(Exception("Diary is already deleted! ")))
+                        emit(RequestState.Error(Exception("Email Account is already deleted! ")))
                     }
                     .collect { emailAccount ->
                         if (emailAccount is RequestState.Success) {

@@ -64,9 +64,6 @@ fun AddEmailAccountScreen(
             onSaveClick = onSaveClick,
             modifier = modifier.padding(innerPadding)
         )
-        Box(
-            modifier = Modifier.padding(innerPadding)
-        )
     }
 }
 

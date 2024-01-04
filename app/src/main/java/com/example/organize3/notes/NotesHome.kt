@@ -124,6 +124,7 @@ fun NotesHome(
                 note.isArchived == 0
             },
             onValueChange = viewModel::onSearchTextChange
+//   This is also true onValueChange = {str -> viewModel.onSearchTextChange(str)}
         )
     }
 }
@@ -181,16 +182,7 @@ fun NotesList(
     ) {
         SearchField(
             value = searchQuery,
-            isHintDisplayed = isHintDisplayed,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(100))
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .onFocusChanged {
-                    isHintDisplayed = !(it.hasFocus)
-                }
-            ,
-            hintText = stringResource(id = R.string.hint_search_notes),
+            searchText = R.string.hint_search_notes,
             onValueChanged = onValueChange)
         Spacer(modifier = Modifier.height(16.dp))
         if (notesList.isEmpty()) {

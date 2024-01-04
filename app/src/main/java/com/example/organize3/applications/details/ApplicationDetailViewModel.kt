@@ -1,4 +1,4 @@
-package com.example.organize3.emailAccounts.details
+package com.example.organize3.applications.details
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -6,9 +6,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.organize3.data.email.EmailAccount
+import com.example.organize3.data.application.ApplicationAccount
 import com.example.organize3.data.email.repository.MongoDB
-import com.example.organize3.emailAccounts.add_update.EmailUiState
 import com.example.organize3.util.Constants
 import com.example.organize3.util.RequestState
 import kotlinx.coroutines.Dispatchers
@@ -16,51 +15,51 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class EmailDetailViewModel(
+class ApplicationDetailViewModel(
     private val savedStateHandle: SavedStateHandle
-): ViewModel(){
-
-    var uiState by mutableStateOf(EmailUiState())
+): ViewModel() {
+    var uiState by mutableStateOf(ApplicationUiState())
         private set
 
     init {
-        getEmailIdArgument()
-        fetchSelectedEmailAccount()
+        getApplicationIdArgument()
+        fetchSelectedApplicationAccount()
     }
-    private fun getEmailIdArgument() {
+    private fun getApplicationIdArgument() {
         uiState = uiState.copy(
-            selectedEmailId = savedStateHandle.get<String>(key = Constants.EMAIL_SCREEN_ARGUMENT_KEY)
+            selectedApplicationId  = savedStateHandle.get<String>(key = Constants.APPLICATION_SCREEN_ARGUMENT_KEY)
         )
     }
-    private fun fetchSelectedEmailAccount() {
-        if (uiState.selectedEmailId != null) {
+
+    private fun fetchSelectedApplicationAccount() {
+        if (uiState.selectedApplicationId != null) {
             viewModelScope.launch(Dispatchers.Main) {
-                MongoDB.getSelectedEmailAccount(
-                    emailId = org.mongodb.kbson.ObjectId.invoke(uiState.selectedEmailId!!)
+                MongoDB.getSelectedApplicationAccount(
+                    appId = org.mongodb.kbson.ObjectId.invoke(uiState.selectedApplicationId!!)
                 )
                     .catch {
-                        emit(RequestState.Error(Exception("EmailAccount is already deleted! ")))
+                        emit(RequestState.Error(Exception("Application Account is already deleted! ")))
                     }
-                    .collect { emailAccount ->
-                        if (emailAccount is RequestState.Success) {
-                            setTitle(emailAccount.data.title)
-                            setEmail(emailAccount.data.email)
-                            setPassword(emailAccount.data.password)
-                            setRemarks(emailAccount.data.remarks)
-                            setIsArchived(emailAccount.data.isArchived)
+                    .collect { applicationAccount ->
+                        if (applicationAccount is RequestState.Success) {
+                            setTitle(applicationAccount.data.title)
+                            setUsername(applicationAccount.data.username)
+                            setPassword(applicationAccount.data.password)
+                            setRemarks(applicationAccount.data.remarks)
+                            setIsArchived(applicationAccount.data.isArchived)
                         }
                     }
             }
         }
     }
 
-    fun deleteEmailAccount(
+    fun deleteApplicationAccount(
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            if (uiState.selectedEmailId != null) {
-                val result = MongoDB.deleteEmailAccount(id = org.mongodb.kbson.ObjectId.invoke(uiState.selectedEmailId!!))
+            if (uiState.selectedApplicationId != null) {
+                val result = MongoDB.deleteApplicationAccount(id = org.mongodb.kbson.ObjectId.invoke(uiState.selectedApplicationId!!))
                 if (result is RequestState.Success) {
                     withContext(Dispatchers.Main) {
                         onSuccess()
@@ -74,15 +73,15 @@ class EmailDetailViewModel(
         }
     }
 
-    fun duplicateEmailAccount(
+    fun duplicateApplicationAccount(
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
-        viewModelScope.launch(Dispatchers.IO){
-            if (uiState.selectedEmailId != null) {
-                val result = MongoDB.insertEmailAccount(emailAccount = EmailAccount().apply {
+        viewModelScope.launch(Dispatchers.IO) {
+            if (uiState.selectedApplicationId != null) {
+                val result = MongoDB.insertApplicationAccount(applicationAccount = ApplicationAccount().apply {
                     title = "copy of ${uiState.title}"
-                    email = uiState.email
+                    username = uiState.username
                     password = uiState.password
                     remarks = uiState.remarks
                     isArchived = uiState.isArchived
@@ -100,16 +99,16 @@ class EmailDetailViewModel(
         }
     }
 
-    fun archiveEmailAccount(
+    fun archiveApplicationAccount(
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
-        viewModelScope.launch(Dispatchers.IO){
-            if (uiState.selectedEmailId != null) {
-                val result = MongoDB.updateEmailAccount(emailAccount = EmailAccount().apply {
-                    _id = org.mongodb.kbson.ObjectId.invoke(uiState.selectedEmailId!!)
+        viewModelScope.launch(Dispatchers.IO) {
+            if (uiState.selectedApplicationId != null) {
+                val result = MongoDB.updateApplicationAccount(applicationAccount = ApplicationAccount().apply {
+                   _id = org.mongodb.kbson.ObjectId.invoke(uiState.selectedApplicationId!!)
                     title = uiState.title
-                    email = uiState.email
+                    username = uiState.username
                     password = uiState.password
                     remarks = uiState.remarks
                     isArchived = 1
@@ -126,15 +125,14 @@ class EmailDetailViewModel(
             }
         }
     }
-
     private fun setTitle(title: String) {
         uiState = uiState.copy(
             title = title
         )
     }
-    private fun setEmail(email: String) {
+    private fun setUsername(username: String) {
         uiState = uiState.copy(
-            email = email
+            username = username
         )
     }
     private fun setPassword(password: String) {
@@ -155,3 +153,12 @@ class EmailDetailViewModel(
         )
     }
 }
+
+data class ApplicationUiState(
+    val selectedApplicationId: String? = null,
+    val title: String = "",
+    val username: String = "",
+    val password: String = "",
+    val remarks: String = "",
+    val isArchived: Int = 0
+)

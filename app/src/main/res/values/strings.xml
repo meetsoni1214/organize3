@@ -43,6 +43,7 @@
     <string name="mobile_transaction_pin">Banking App Transaction Pin</string>
     <string name="select_bank">Select Your Bank</string>
     <string name="search">Search Banks</string>
+    <string name="search_email_account">Search Email Account</string>
     <string name="popular_bank">Popular Banks</string>
     <string name="kalupur_bank">"The Kalupur Commercial Co-operative Bank"</string>
     <string name="state_bank_india">"State Bank of India"</string>
@@ -92,6 +93,7 @@
     <string name="application_account_deleted">Application Account Details has been deleted</string>
     <string name="no_search_result_found">Sorry No results Found</string>
     <string name="search_application_account">Search Application Accounts</string>
+    <string name="empty_application_account">Application Accounts are Empty</string>
     <string name="bank_account">Bank Accounts</string>
     <string name="ambarnath_bank">"AMBARNATH JAI-HIND CO-OP.BANK LTD"</string>
     <string name="au_small_bank">"AU Small Finance Bank"</string>
